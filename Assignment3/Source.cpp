@@ -31,6 +31,8 @@ typedef struct Vertex
 {
 	GLfloat position[3];
 	GLfloat normal[3];
+	GLfloat tangent[3];
+	GLfloat texCoord[2];
 } Vertex;
 
 //mesh properties
@@ -72,18 +74,29 @@ GLuint g_shaderProgramID = 0;
 GLuint g_MVP_Index = 0;
 GLuint g_MV_Index = 0;
 GLuint g_V_Index = 0;
-
+GLuint g_texSamplerIndex;
+GLuint g_normalSamplerIndex;
 
 GLuint g_lightPositionIndex = 0;
 GLuint g_lightAmbientIndex = 0;
 GLuint g_lightDiffuseIndex = 0;
 GLuint g_lightSpecularIndex = 0;
+GLuint g_lightTypeIndex = 0;
+GLuint g_materialAmbientIndex = 0;
+GLuint g_materialDiffuseIndex = 0;
+GLuint g_materialSpecularIndex = 0;
+GLuint g_materialShininessIndex = 0;
 
+glm::mat4 floorMatrix; //floors matrix
+
+Light g_lightPoint;				// light properties
+Light g_lightDirectional;		// light properties
+Material g_material;			// material properties
 
 glm::mat4 g_viewMatrix;
 glm::mat4 g_projectionMatrix;
 
-Light g_light;	//light properties
+
 
 
 
@@ -220,10 +233,10 @@ static void init(GLFWwindow* window) {
 	glGenBuffers(vbo_vao_number, g_IBO);
 
 	// initialise point light properties
-	g_light.position = glm::vec3(10.0f, 10.0f, 10.0f);
+	/*g_light.position = glm::vec3(10.0f, 10.0f, 10.0f);
 	g_light.ambient = glm::vec3(0.2f, 0.2f, 0.2f);
 	g_light.diffuse = glm::vec3(1.0f, 1.0f, 1.0f);
-	g_light.specular = glm::vec3(1.0f, 1.0f, 1.0f);
+	g_light.specular = glm::vec3(1.0f, 1.0f, 1.0f);*/
 
 
 }
