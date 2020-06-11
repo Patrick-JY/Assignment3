@@ -114,17 +114,17 @@ Vertex floor_vertices[] = {
 	// vertex 1
 	-2.5f, 2.5f, 0.0f,	// position
 	0.0f, 0.0f, 1.0f,	// normal
-	1.0f, 0.0f, 0.0f,	// tangent
+	//1.0f, 0.0f, 0.0f,	// tangent
 	0.0f, 2.5f,			// texture coordinate
 	// vertex 2
 	-2.5f, -2.5f, 0.0f,	// position
 	0.0f, 0.0f, 1.0f,	// normal
-	1.0f, 0.0f, 0.0f,	// tangent
+	//1.0f, 0.0f, 0.0f,	// tangent
 	0.0f, 0.0f,			// texture coordinate
 	// vertex 3
 	2.5f, 2.5f, 0.0f,	// position
 	0.0f, 0.0f, 1.0f,	// normal
-	1.0f, 0.0f, 0.0f,	// tangent
+	//1.0f, 0.0f, 0.0f,	// tangent
 	2.5f, 2.5f,			// texture coordinate
 
 	// triangle 2
@@ -145,9 +145,45 @@ Vertex floor_vertices[] = {
 	2.5f, 0.0f,			// texture coordinate
 };
 
+Vertex painting_vertices[] = {
+	// Front: triangle 1
+	// vertex 1
+	-1.0f, 1.0f, 0.0f,	// position
+	0.0f, 0.0f, 1.0f,	// normal
+	1.0f, 0.0f, 0.0f,	// tangent
+	0.0f, 1.0f,			// texture coordinate
+	// vertex 2
+	-1.0f, -1.0f, 0.0f,	// position
+	0.0f, 0.0f, 1.0f,	// normal
+	1.0f, 0.0f, 0.0f,	// tangent
+	0.0f, 0.0f,			// texture coordinate
+	// vertex 3
+	1.0f, 1.0f, 0.0f,	// position
+	0.0f, 0.0f, 1.0f,	// normal
+	1.0f, 0.0f, 0.0f,	// tangent
+	1.0f, 1.0f,			// texture coordinate
+
+	// triangle 2
+	// vertex 1
+	1.0f, 1.0f, 0.0f,	// position
+	0.0f, 0.0f, 1.0f,	// normal
+	1.0f, 0.0f, 0.0f,	// tangent
+	1.0f, 1.0f,			// texture coordinate
+	// vertex 2
+	-1.0f, -1.0f, 0.0f,	// position
+	0.0f, 0.0f, 1.0f,	// normal
+	1.0f, 0.0f, 0.0f,	// tangent
+	0.0f, 0.0f,			// texture coordinate
+	// vertex 3
+	1.0f, -1.0f, 0.0f,	// position
+	0.0f, 0.0f, 1.0f,	// normal
+	1.0f, 0.0f, 0.0f,	// tangent
+	1.0f, 0.0f,			// texture coordinate
+};
+
 
 //Global Vars
-const int vbo_vao_number = 5; //needed to make sure I clean up everything properly
+const int vbo_vao_number = 7; //needed to make sure I clean up everything properly
 
 
 
@@ -176,7 +212,7 @@ GLuint g_materialShininessIndex[shaderNumber];
 
 glm::mat4 floorMatrix; //floors matrix
 glm::mat4 wall_modelMatrix[4]; //wall matrix
-
+glm::mat4 painting_modelMatrix[2]; //painting matrix
 
 Light g_lightPoint;				// light properties
 Light g_lightDirectional;		// light properties
@@ -201,6 +237,10 @@ GLuint wall_textureID[2];			//texture id
 //floor texture
 unsigned char* floor_texImage[1]; //image data
 GLuint floor_textureID[1];
+
+//painting texture
+unsigned char* painting_texImage[2];
+GLuint painting_textureID[2];
 
 
 bool wireFrame = false;
@@ -333,6 +373,8 @@ static void init(GLFWwindow* window) {
 	wall_modelMatrix[1] = glm::mat4(1.0f);
 	wall_modelMatrix[2] = glm::mat4(1.0f);
 	wall_modelMatrix[3] = glm::mat4(1.0f);
+	painting_modelMatrix[0] = glm::mat4(1.0f);
+	painting_modelMatrix[1] = glm::mat4(1.0f);
 	//init view matrix
 	
 
@@ -358,12 +400,13 @@ static void init(GLFWwindow* window) {
 	wall_material.shininess = 40.0f;
 
 	// read the image data
-	GLint imageWidth[3];			//image width info
-	GLint imageHeight[3];			//image height info
+	GLint imageWidth[6];			//image width info
+	GLint imageHeight[6];			//image height info
 	wall_texImage[0] = readBitmapRGBImage("images/Fieldstone.bmp", &imageWidth[0], &imageHeight[0]);
 	wall_texImage[1] = readBitmapRGBImage("images/FieldstoneBumpDOT3.bmp", &imageWidth[1], &imageHeight[1]);
 	floor_texImage[0] = readBitmapRGBImage("images/check.bmp", &imageWidth[2], &imageHeight[2]);
-
+	painting_texImage[0] = readBitmapRGBImage("images/guildwars-2.bmp", &imageWidth[3], &imageHeight[3]);
+	painting_texImage[1] = readBitmapRGBImage("images/merrychristmas.bmp", &imageWidth[4], &imageHeight[4]);
 	// generate identifier for wall texture object and set wall texture properties
 	glGenTextures(2, wall_textureID);
 	glBindTexture(GL_TEXTURE_2D, wall_textureID[0]);
@@ -397,6 +440,28 @@ static void init(GLFWwindow* window) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glGenTextures(2, painting_textureID);
+	glBindTexture(GL_TEXTURE_2D, painting_textureID[0]);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth[3], imageHeight[3], 0, GL_BGR, GL_UNSIGNED_BYTE, painting_texImage[0]);
+	glGenerateMipmap(GL_TEXTURE_2D);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glBindTexture(GL_TEXTURE_2D, painting_textureID[1]);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth[4], imageHeight[4], 0, GL_BGR, GL_UNSIGNED_BYTE, painting_texImage[1]);
+	glGenerateMipmap(GL_TEXTURE_2D);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
 
 
 
@@ -437,6 +502,23 @@ static void init(GLFWwindow* window) {
 	glEnableVertexAttribArray(normalIndex[0]);
 	glEnableVertexAttribArray(tangentIndex);
 	glEnableVertexAttribArray(texCoordIndex[0]);
+	//making paintings
+	for (int i = 5; i < 7; i++) {
+		glBindBuffer(GL_ARRAY_BUFFER, g_VBO[i]);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(painting_vertices), painting_vertices, GL_STATIC_DRAW);
+		glBindVertexArray(g_VAO[i]);
+		glBindBuffer(GL_ARRAY_BUFFER, g_VBO[i]);
+		glVertexAttribPointer(positionIndex[0], 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, position)));
+		glVertexAttribPointer(normalIndex[0], 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, normal)));
+		glVertexAttribPointer(tangentIndex, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, tangent)));
+		glVertexAttribPointer(texCoordIndex[0], 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, texCoord)));
+
+		glEnableVertexAttribArray(positionIndex[0]);	// enable vertex attributes
+		glEnableVertexAttribArray(normalIndex[0]);
+		glEnableVertexAttribArray(tangentIndex);
+		glEnableVertexAttribArray(texCoordIndex[0]);
+
+	}
 	
 
 
@@ -456,7 +538,11 @@ static void init(GLFWwindow* window) {
 	floorMatrix = glm::rotate(floorMatrix, radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	floorMatrix = glm::translate(floorMatrix, vec3(1.5f, 2.5f, 1.0f));
 
-
+	//paintings
+	painting_modelMatrix[0] *= glm::scale(vec3(0.50f, 0.50f, 0.50f));
+	painting_modelMatrix[1] *= glm::scale(vec3(0.50f, 0.50f, 0.50f));
+	painting_modelMatrix[0] = glm::translate(painting_modelMatrix[0], vec3(0.0f, 0.0f, 0.2f));
+	
 }
 
 
@@ -482,6 +568,49 @@ static void update_scene(GLFWwindow* window) {
 
 	g_camera.update(moveForward, strafeRight);	// update camera
 }
+
+void draw_painting() {
+	glUseProgram(g_shaderProgramID);
+	glm::mat4 MVP;
+	glm::mat4 MV;
+	glm::mat4 V;
+	//render paintings
+
+	for (int i = 0; i < 2; i++) {
+		glBindVertexArray(g_VAO[i+5]);		// make VAO active
+
+		// set uniform shader variables
+		MVP = g_camera.getProjectionMatrix() * g_camera.getViewMatrix() * painting_modelMatrix[i];
+		MV = g_camera.getViewMatrix() * painting_modelMatrix[i];
+		V = g_camera.getViewMatrix();
+		glUniformMatrix4fv(g_MVP_Index[0], 1, GL_FALSE, &MVP[0][0]);
+		glUniformMatrix4fv(g_MV_Index[0], 1, GL_FALSE, &MV[0][0]);
+		glUniformMatrix4fv(g_V_Index[0], 1, GL_FALSE, &V[0][0]);
+
+		glUniform3fv(g_lightPositionIndex[0], 1, &g_lightPoint.position[0]);
+		glUniform3fv(g_lightAmbientIndex[0], 1, &g_lightPoint.ambient[0]);
+		glUniform3fv(g_lightDiffuseIndex[0], 1, &g_lightPoint.diffuse[0]);
+		glUniform3fv(g_lightSpecularIndex[0], 1, &g_lightPoint.specular[0]);
+		glUniform1i(g_lightTypeIndex[0], g_lightPoint.type);
+
+		glUniform3fv(g_materialAmbientIndex[0], 1, &wall_material.ambient[0]);
+		glUniform3fv(g_materialDiffuseIndex[0], 1, &wall_material.diffuse[0]);
+		glUniform3fv(g_materialSpecularIndex[0], 1, &wall_material.specular[0]);
+		glUniform1fv(g_materialShininessIndex[0], 1, &wall_material.shininess);
+
+		glUniform1i(g_texSamplerIndex[0], 0);
+		glUniform1i(g_normalSamplerIndex[0], 1);
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, painting_textureID[i]);
+
+		
+
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+	}
+}
+
+
 void draw_walls() {
 	glUseProgram(g_shaderProgramID);	// use the shaders associated with the shader program
 
@@ -580,6 +709,7 @@ static void render_scene()
 
 	draw_walls();
 	
+	draw_painting();
 	
 
 	glFlush();

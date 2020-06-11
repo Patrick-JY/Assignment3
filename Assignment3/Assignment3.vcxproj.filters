@@ -33,6 +33,12 @@
     <None Include="LightAndTextureVS.vert">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="AlphaBlendingVS.vert">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="AlphaBlendingFS.frag">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="shader.h">
