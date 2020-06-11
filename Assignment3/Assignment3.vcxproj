@@ -151,12 +151,18 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="ColorFS.frag" />
+    <None Include="NormalMapFS.frag" />
+    <None Include="NormalMapVS.vert" />
     <None Include="VS.vert" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="bmpfuncs.h" />
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="shader.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="bmpfuncs.cpp" />
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="shader.cpp" />
     <ClCompile Include="Source.cpp" />
   </ItemGroup>
