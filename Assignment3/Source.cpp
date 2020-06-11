@@ -45,6 +45,12 @@ typedef struct simpleVertex
 	GLfloat texCoord[2];
 }simpleVertex;
 
+typedef struct simplerVertex
+{
+	GLfloat position[3];
+	GLfloat colour[3];
+} simplerVertex;
+
 struct simpleLight
 {
 	vec3 position;
@@ -190,31 +196,19 @@ Vertex painting_vertices[] = {
 
 
 Vertex partition_vertices[] = {
-	// Front: triangle 1
-	// vertex 1
-	-1.0f, 1.0f, 0.0f,	// position
-	0.0f, 0.0f, 1.0f,	// normal
-	// vertex 2
-	-1.0f, -1.0f, 0.0f,	// position
-	0.0f, 0.0f, 1.0f,	// normal
-	
-	// vertex 3
-	1.0f, 1.0f, 0.0f,	// position
-	0.0f, 0.0f, 1.0f,	// normal
-	
-
-	// triangle 2
-	// vertex 1
-	1.0f, 1.0f, 0.0f,	// position
-	0.0f, 0.0f, 1.0f,	// normal
-	
-	// vertex 2
-	-1.0f, -1.0f, 0.0f,	// position
-	0.0f, 0.0f, 1.0f,	// normal
-	
-	// vertex 3
-	1.0f, -1.0f, 0.0f,	// position
-	0.0f, 0.0f, 1.0f,	// normal
+	// plane
+	-0.5f, 0.5f, 0.0f,	// position
+	1.0f, 0.0f, 0.0f,	// colour
+	-0.5f, -0.5f, 0.0f,	// position
+	0.0f, 1.0f, 0.0f,	// colour
+	0.5f, 0.5f, 0.0f,	// position
+	0.0f, 0.0f, 1.0f,	// colour
+	0.5f, 0.5f, 0.0f,	// position
+	0.0f, 0.0f, 1.0f,	// colour
+	-0.5f, -0.5f, 0.0f,	// position
+	0.0f, 1.0f, 0.0f,	// colour
+	0.5f, -0.5f, 0.0f,	// position
+	1.0f, 1.0f, 0.0f,	// colour
 	
 };
 
@@ -427,7 +421,7 @@ Vertex cube_vertices[] = {
 
 
 //Global Vars
-const int vbo_vao_number = 8; //needed to make sure I clean up everything properly
+const int vbo_vao_number = 9; //needed to make sure I clean up everything properly
 
 
 
@@ -436,7 +430,8 @@ GLuint g_VBO[vbo_vao_number];
 GLuint g_VAO[vbo_vao_number];
 GLuint g_shaderProgramID = 0;
 GLuint textureLight_shaderProgramID = 0;
-const int shaderNumber = 2;
+GLuint simplePartition_ShaderProgramID = 0;
+const int shaderNumber = 3;
 GLuint g_MVP_Index[shaderNumber];
 GLuint g_MV_Index[shaderNumber];
 GLuint g_V_Index[shaderNumber];
@@ -454,10 +449,14 @@ GLuint g_materialDiffuseIndex[shaderNumber];
 GLuint g_materialSpecularIndex[shaderNumber];
 GLuint g_materialShininessIndex[shaderNumber];
 
+GLuint g_alphaIndex[shaderNumber];
+
 glm::mat4 floorMatrix; //floors matrix
 glm::mat4 wall_modelMatrix[4]; //wall matrix
 glm::mat4 painting_modelMatrix[2]; //painting matrix
 glm::mat4 cube_modelMatrix[1];
+glm::mat4 partition_modelMatrix[1];
+
 
 Light g_lightPoint;				// light properties
 Light g_lightDirectional;		// light properties
@@ -589,6 +588,9 @@ static void init(GLFWwindow* window) {
 	//create and compile our GLSL programs from the shader files
 	g_shaderProgramID = loadShaders("NormalMapVS.vert", "NormalMapFS.frag");
 	textureLight_shaderProgramID = loadShaders("LightAndTextureVS.vert","LightAndTextureFS.frag" );
+	simplePartition_ShaderProgramID = loadShaders("AlphaBlendingVS.vert", "AlphaBlendingFS.frag");
+
+
 	GLuint positionIndex[shaderNumber];
 	GLuint normalIndex[shaderNumber];
 	GLuint texCoordIndex[shaderNumber];
@@ -643,6 +645,13 @@ static void init(GLFWwindow* window) {
 	g_materialSpecularIndex[1] = glGetUniformLocation(textureLight_shaderProgramID, "uMaterial.specular");
 	g_materialShininessIndex[1] = glGetUniformLocation(textureLight_shaderProgramID, "uMaterial.shininess");
 
+	// simple partition shader
+
+	positionIndex[2] = glGetAttribLocation(simplePartition_ShaderProgramID, "aPosition");
+	GLuint colourIndex = glGetAttribLocation(simplePartition_ShaderProgramID, "aColour");
+
+	g_MVP_Index[2] = glGetUniformLocation(simplePartition_ShaderProgramID, "uModelViewProjectionMatrix");
+	g_alphaIndex[2] = glGetUniformLocation(simplePartition_ShaderProgramID, "uAlpha");
 
 
 	//init model matrices
@@ -654,6 +663,7 @@ static void init(GLFWwindow* window) {
 	painting_modelMatrix[0] = glm::mat4(1.0f);
 	painting_modelMatrix[1] = glm::mat4(1.0f);
 	cube_modelMatrix[0] = glm::mat4(1.0f);
+	partition_modelMatrix[0] = glm::mat4(1.0f);
 	//init view matrix
 	
 
@@ -826,6 +836,21 @@ static void init(GLFWwindow* window) {
 	glEnableVertexAttribArray(texCoordIndex[1]);
 
 	
+	glBindBuffer(GL_ARRAY_BUFFER, g_VBO[8]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(partition_vertices), partition_vertices, GL_STATIC_DRAW);
+
+	
+
+	// create VAO and specify VBO data
+	glBindVertexArray(g_VAO[8]);
+	glBindBuffer(GL_ARRAY_BUFFER, g_VBO[8]);
+	glVertexAttribPointer(positionIndex[2], 3, GL_FLOAT, GL_FALSE, sizeof(simplerVertex), reinterpret_cast<void*>(offsetof(simplerVertex, position)));
+	glVertexAttribPointer(colourIndex, 3, GL_FLOAT, GL_FALSE, sizeof(simplerVertex), reinterpret_cast<void*>(offsetof(simplerVertex, colour)));
+
+	glEnableVertexAttribArray(positionIndex[2]);	// enable vertex attributes
+	glEnableVertexAttribArray(colourIndex);
+
+	
 
 
 	//Constructing House
@@ -855,7 +880,8 @@ static void init(GLFWwindow* window) {
 	cube_modelMatrix[0] *= glm::scale(vec3(0.75f, 0.75f, 0.75f));
 	cube_modelMatrix[0] = glm::translate(cube_modelMatrix[0], vec3(2.0f, -0.8f, 3.0f));
 
-
+	//partition
+	partition_modelMatrix[0] = glm::translate(partition_modelMatrix[0], vec3(3.0f, 0.0f, 3.0f));
 }
 
 
@@ -882,7 +908,22 @@ static void update_scene(GLFWwindow* window) {
 	g_camera.update(moveForward, strafeRight);	// update camera
 }
 
+void draw_partition() {
+	glUseProgram(simplePartition_ShaderProgramID);	// use the shaders associated with the shader program
 
+	glBindVertexArray(g_VAO[8]);		// make VAO active
+	
+
+	glm::mat4 MVP;
+
+	// set shader variables
+	MVP = g_camera.getProjectionMatrix() * g_camera.getViewMatrix() * partition_modelMatrix[0];
+	glUniformMatrix4fv(g_MVP_Index[2], 1, GL_FALSE, &MVP[0][0]);
+	glUniform1f(g_alphaIndex[2], 1.0);
+
+	// draw plane
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+}
 void draw_cube() {
 	glUseProgram(textureLight_shaderProgramID);
 	glm::mat4 MVP;
@@ -1071,6 +1112,8 @@ static void render_scene()
 	
 	draw_cube();
 
+	draw_partition();
+
 	glFlush();
 }
 
@@ -1179,7 +1222,7 @@ int main(void)
 {
 	GLFWwindow* window = NULL;	// pointer to a GLFW window handle
 	TwBar* TweakBar;
-
+	//glEnable(GL_BLEND);
 	double lastUpdateTime = glfwGetTime();	// last update time
 	double elapsedTime = lastUpdateTime;	// time elapsed since last update
 	
@@ -1255,6 +1298,8 @@ int main(void)
 	// initialise rendering states
 	init(window);
 
+
+
 	// the rendering loop
 	while (!glfwWindowShouldClose(window))
 	{
@@ -1297,6 +1342,7 @@ int main(void)
 
 	glDeleteProgram(g_shaderProgramID);
 	glDeleteProgram(textureLight_shaderProgramID);
+	glDeleteProgram(simplePartition_ShaderProgramID);
 	glDeleteBuffers(vbo_vao_number, g_IBO);
 	glDeleteBuffers(vbo_vao_number, g_VBO);
 	glDeleteVertexArrays(vbo_vao_number, g_VAO);
