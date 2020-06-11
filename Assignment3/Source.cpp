@@ -188,6 +188,36 @@ Vertex painting_vertices[] = {
 	1.0f, 0.0f,			// texture coordinate
 };
 
+
+Vertex partition_vertices[] = {
+	// Front: triangle 1
+	// vertex 1
+	-1.0f, 1.0f, 0.0f,	// position
+	0.0f, 0.0f, 1.0f,	// normal
+	// vertex 2
+	-1.0f, -1.0f, 0.0f,	// position
+	0.0f, 0.0f, 1.0f,	// normal
+	
+	// vertex 3
+	1.0f, 1.0f, 0.0f,	// position
+	0.0f, 0.0f, 1.0f,	// normal
+	
+
+	// triangle 2
+	// vertex 1
+	1.0f, 1.0f, 0.0f,	// position
+	0.0f, 0.0f, 1.0f,	// normal
+	
+	// vertex 2
+	-1.0f, -1.0f, 0.0f,	// position
+	0.0f, 0.0f, 1.0f,	// normal
+	
+	// vertex 3
+	1.0f, -1.0f, 0.0f,	// position
+	0.0f, 0.0f, 1.0f,	// normal
+	
+};
+
 Vertex cube_vertices[] = {
 	// Front: triangle 1
 	// vertex 1
@@ -436,6 +466,7 @@ Material wall_material;			// wall material properties
 glm::mat4 g_viewMatrix;
 glm::mat4 g_projectionMatrix;
 
+static int screenshotNum = 0;
 
 double frameTime = 0.0f;				// frame time
 
@@ -833,7 +864,7 @@ static void init(GLFWwindow* window) {
 static void update_scene(GLFWwindow* window) {
 	
 
-
+	g_lightPoint.position = glm::vec3(lightx, lighty, lightz);
 	// variables to store forward/back and strafe movement
 	float moveForward = 0;
 	float strafeRight = 0;
@@ -1055,6 +1086,28 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 		// set flag to close the window
 		glfwSetWindowShouldClose(window, GL_TRUE);
 		return;
+	}
+	// if the 0 key is pressed that a screen capture
+	if (key == GLFW_KEY_0 && action == GLFW_PRESS)
+	{
+		// compute size of the image
+		int size = g_windowWidth * g_windowHeight * 3;
+
+		// allocate memory to store the image
+		unsigned char* outBuffer = new unsigned char[size];
+
+		// read pixels from the colour buffer
+		glReadPixels(0, 0, g_windowWidth, g_windowHeight, GL_RGB, GL_UNSIGNED_BYTE, (GLvoid*)outBuffer);
+
+		// write the image to a file
+		string intStr = to_string(screenshotNum);
+		string screenshotname = "images/screenshot" + intStr + ".bmp";
+		const char* cstr = screenshotname.c_str();
+		screenshotNum++;
+		writeBitmapRGBImage(cstr, (char*)outBuffer, g_windowWidth, g_windowHeight);
+
+		// deallocate memory
+		delete[] outBuffer;
 	}
 }
 
