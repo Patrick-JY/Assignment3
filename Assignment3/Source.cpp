@@ -131,6 +131,8 @@ GLuint g_materialSpecularIndex = 0;
 GLuint g_materialShininessIndex = 0;
 
 glm::mat4 floorMatrix; //floors matrix
+glm::mat4 wall_modelMatrix[4]; //wall matrix
+
 
 Light g_lightPoint;				// light properties
 Light g_lightDirectional;		// light properties
@@ -141,7 +143,7 @@ glm::mat4 g_projectionMatrix;
 
 
 
-glm::mat4 wall_modelMatrix[4];
+
 
 double frameTime = 0.0f;				// frame time
 
@@ -355,6 +357,17 @@ static void init(GLFWwindow* window) {
 		glEnableVertexAttribArray(texCoordIndex);
 	}
 
+	//Constructing House
+
+	//put walls in position
+	//the side walls
+	wall_modelMatrix[1] = glm::rotate(wall_modelMatrix[1],radians(90.0f),glm::vec3(0.0f, -1.0f, 0.0f));
+	wall_modelMatrix[1] = glm::translate(wall_modelMatrix[1], glm::vec3(1.0f, 0.0f, 1.0f));
+	wall_modelMatrix[2] = glm::rotate(wall_modelMatrix[2], radians(90.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+	wall_modelMatrix[2] = glm::translate(wall_modelMatrix[2], glm::vec3(1.0f, 0.0f, -4.0f));
+
+	//the end wall
+	wall_modelMatrix[3] = glm::translate(wall_modelMatrix[3], glm::vec3(0.0f, 0.0f, 5.0f));
 
 
 
@@ -364,6 +377,9 @@ static void init(GLFWwindow* window) {
 // function used to update the scene
 
 static void update_scene(GLFWwindow* window) {
+	
+
+
 	// variables to store forward/back and strafe movement
 	float moveForward = 0;
 	float strafeRight = 0;
@@ -387,37 +403,48 @@ static void render_scene()
 
 	glUseProgram(g_shaderProgramID);	// use the shaders associated with the shader program
 
-	glBindVertexArray(g_VAO[0]);		// make VAO active
+	glm::mat4 MVP;
+	glm::mat4 MV;
+	glm::mat4 V;
+	//render walls
 
-	// set uniform shader variables
-	glm::mat4 MVP = g_camera.getProjectionMatrix() * g_camera.getViewMatrix() * wall_modelMatrix[0];
-	glm::mat4 MV = g_camera.getViewMatrix() * wall_modelMatrix[0];
-	glm::mat4 V = g_camera.getViewMatrix();
-	glUniformMatrix4fv(g_MVP_Index, 1, GL_FALSE, &MVP[0][0]);
-	glUniformMatrix4fv(g_MV_Index, 1, GL_FALSE, &MV[0][0]);
-	glUniformMatrix4fv(g_V_Index, 1, GL_FALSE, &V[0][0]);
+	for (int i = 0; i < 4; i++) {
+		glBindVertexArray(g_VAO[i]);		// make VAO active
 
-	glUniform3fv(g_lightPositionIndex, 1, &g_lightPoint.position[0]);
-	glUniform3fv(g_lightAmbientIndex, 1, &g_lightPoint.ambient[0]);
-	glUniform3fv(g_lightDiffuseIndex, 1, &g_lightPoint.diffuse[0]);
-	glUniform3fv(g_lightSpecularIndex, 1, &g_lightPoint.specular[0]);
-	glUniform1i(g_lightTypeIndex, g_lightPoint.type);
+		// set uniform shader variables
+		MVP = g_camera.getProjectionMatrix() * g_camera.getViewMatrix() * wall_modelMatrix[i];
+		MV = g_camera.getViewMatrix() * wall_modelMatrix[i];
+		V = g_camera.getViewMatrix();
+		glUniformMatrix4fv(g_MVP_Index, 1, GL_FALSE, &MVP[0][0]);
+		glUniformMatrix4fv(g_MV_Index, 1, GL_FALSE, &MV[0][0]);
+		glUniformMatrix4fv(g_V_Index, 1, GL_FALSE, &V[0][0]);
 
-	glUniform3fv(g_materialAmbientIndex, 1, &wall_material.ambient[0]);
-	glUniform3fv(g_materialDiffuseIndex, 1, &wall_material.diffuse[0]);
-	glUniform3fv(g_materialSpecularIndex, 1, &wall_material.specular[0]);
-	glUniform1fv(g_materialShininessIndex, 1, &wall_material.shininess);
+		glUniform3fv(g_lightPositionIndex, 1, &g_lightPoint.position[0]);
+		glUniform3fv(g_lightAmbientIndex, 1, &g_lightPoint.ambient[0]);
+		glUniform3fv(g_lightDiffuseIndex, 1, &g_lightPoint.diffuse[0]);
+		glUniform3fv(g_lightSpecularIndex, 1, &g_lightPoint.specular[0]);
+		glUniform1i(g_lightTypeIndex, g_lightPoint.type);
 
-	glUniform1i(g_texSamplerIndex, 0);
-	glUniform1i(g_normalSamplerIndex, 1);
+		glUniform3fv(g_materialAmbientIndex, 1, &wall_material.ambient[0]);
+		glUniform3fv(g_materialDiffuseIndex, 1, &wall_material.diffuse[0]);
+		glUniform3fv(g_materialSpecularIndex, 1, &wall_material.specular[0]);
+		glUniform1fv(g_materialShininessIndex, 1, &wall_material.shininess);
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, wall_textureID[0]);
+		glUniform1i(g_texSamplerIndex, 0);
+		glUniform1i(g_normalSamplerIndex, 1);
 
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, wall_textureID[1]);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, wall_textureID[0]);
 
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, wall_textureID[1]);
+
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+	}
+
+	
+
+	
 
 	glFlush();
 }
