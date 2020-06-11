@@ -9,19 +9,19 @@ in vec2 vTexCoord;
 // light and material structs
 struct Light
 {
-	vec3 position;
-	vec3 direction;
-	vec3 ambient;
-	vec3 diffuse;
-	vec3 specular;
+	vec4 position;
+	vec4 direction;
+	vec4 ambient;
+	vec4 diffuse;
+	vec4 specular;
 	int type;
 };
 
 struct Material
 {
-	vec3 ambient;
-	vec3 diffuse;
-	vec3 specular;
+	vec4 ambient;
+	vec4 diffuse;
+	vec4 specular;
 	float shininess;
 };
 
@@ -33,7 +33,7 @@ uniform sampler2D uTextureSampler;
 uniform sampler2D uNormalSampler;
 
 // output data
-out vec3 fColor;
+out vec4 fColor;
 
 void main()
 {
@@ -48,22 +48,22 @@ void main()
 
 	// determine whether the light is a point light source or directional light
 	if(uLight.type == 0)
-		L = normalize((uViewMatrix * vec4(uLight.position, 1.0f)).xyz - vPosition);
+		L = normalize((uViewMatrix * uLight.position).xyz - vPosition);
 	else
-		L = normalize((uViewMatrix * vec4(-uLight.direction, 0.0f)).xyz);
+		L = normalize((uViewMatrix * -uLight.direction).xyz);
 
     vec3 E = normalize(-vPosition);
     vec3 H = normalize(L + E);
 
 	// calculate the ambient, diffuse and specular components
-	vec3 ambient  = uLight.ambient * uMaterial.ambient;
-    vec3 diffuse  = uLight.diffuse * uMaterial.diffuse * max(dot(L, normal), 0.0);
-	vec3 specular = vec3(0.0f, 0.0f, 0.0f);
+	vec4 ambient  = uLight.ambient * uMaterial.ambient;
+    vec4 diffuse  = uLight.diffuse * uMaterial.diffuse * max(dot(L, normal), 0.0);
+	vec4 specular = vec4(0.0f, 0.0f, 0.0f,1.0f);
 
 	if(dot(L, normal) > 0.0f)
 	    specular = uLight.specular * uMaterial.specular * pow(max(dot(normal, H), 0.0), uMaterial.shininess);
 
 	// set output color
 	fColor = diffuse + specular + ambient;
-	fColor *= texture(uTextureSampler, vTexCoord).rgb;
+	fColor *= texture(uTextureSampler, vTexCoord).rgba;
 }

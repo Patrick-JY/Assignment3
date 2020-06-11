@@ -23,6 +23,12 @@ using namespace glm;	// to avoid having to use glm::
 #include "Camera.h"
 #include "bmpfuncs.h"
 
+//This may not be allowed, however all I am using this for is to import the texture images with alpha channels something
+//bmpfuncs does not do, this code was aquired from https://github.com/nothings/stb/blob/master/stb_image.h
+//this file was not my own work
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 #define MOVEMENT_SENSITIVITY 3.0f		// camera movement sensitivity
 #define ROTATION_SENSITIVITY 0.3f		// camera rotation sensitivity
 
@@ -38,12 +44,7 @@ typedef struct Vertex
 	GLfloat texCoord[2];
 } Vertex;
 
-typedef struct simpleVertex
-{
-	GLfloat position[3];
-	GLfloat normal[3];
-	GLfloat texCoord[2];
-}simpleVertex;
+
 
 
 //mesh properties
@@ -57,18 +58,18 @@ typedef struct Mesh
 
 // light and material structs
 typedef struct Light {
-	vec3 position;
-	glm::vec3 direction;
-	vec3 ambient;
-	vec3 diffuse;
-	vec3 specular;
+	vec4 position;
+	glm::vec4 direction;
+	vec4 ambient;
+	vec4 diffuse;
+	vec4 specular;
 	int type;
 };
 
 typedef struct Material {
-	vec3 ambient;
-	vec3 diffuse;
-	vec3 specular;
+	vec4 ambient;
+	vec4 diffuse;
+	vec4 specular;
 	float shininess;
 };
 
@@ -338,6 +339,7 @@ static void init(GLFWwindow* window) {
 
 	int width;
 	int height;
+	int nrChannels;
 
 	glfwGetFramebufferSize(window, &width, &height);
 	float aspectRatio = static_cast<float>(width) / height;
@@ -345,30 +347,32 @@ static void init(GLFWwindow* window) {
 	g_camera.setProjection(glm::radians(45.0f), aspectRatio, 0.1f, 100.0f);
 
 	// initialise point light properties
-	g_lightPoint.position = glm::vec3(1.0f, 1.0f, 1.0f);
-	g_lightPoint.ambient = glm::vec3(1.0f, 1.0f, 1.0f);
-	g_lightPoint.diffuse = glm::vec3(1.0f, 1.0f, 1.0f);
-	g_lightPoint.specular = glm::vec3(1.0f, 1.0f, 1.0f);
+	g_lightPoint.position = glm::vec4(1.0f, 1.0f, 1.0f,1.0f);
+	g_lightPoint.ambient = glm::vec4(1.0f, 1.0f, 1.0f,1.0f);
+	g_lightPoint.diffuse = glm::vec4(1.0f, 1.0f, 1.0f,1.0f);
+	g_lightPoint.specular = glm::vec4(1.0f, 1.0f, 1.0f,1.0f);
 	g_lightPoint.type = 0;
 
 	// initialise material properties
-	wall_material.ambient = glm::vec3(0.3f, 0.3f, 0.3f);
-	wall_material.diffuse = glm::vec3(0.2f, 0.7f, 1.0f);
-	wall_material.specular = glm::vec3(0.2f, 0.7f, 1.0f);
+	wall_material.ambient = glm::vec4(0.3f, 0.3f, 0.3f,1.0f);
+	wall_material.diffuse = glm::vec4(0.2f, 0.7f, 1.0f,1.0f);
+	wall_material.specular = glm::vec4(0.2f, 0.7f, 1.0f,1.0f);
 	wall_material.shininess = 40.0f;
 
 	// read the image data
 	GLint imageWidth[3];			//image width info
 	GLint imageHeight[3];			//image height info
-	wall_texImage[0] = readBitmapRGBImage("images/Fieldstone.bmp", &imageWidth[0], &imageHeight[0]);
-	wall_texImage[1] = readBitmapRGBImage("images/FieldstoneBumpDOT3.bmp", &imageWidth[1], &imageHeight[1]);
-	floor_texImage[0] = readBitmapRGBImage("images/check.bmp", &imageWidth[2], &imageHeight[2]);
+	wall_texImage[0] = stbi_load("images/Fieldstone.bmp", &imageWidth[0], &imageHeight[0],&nrChannels,0);
+	wall_texImage[1] = stbi_load("images/FieldstoneBumpDOT3.bmp", &imageWidth[1], &imageHeight[1],&nrChannels,0);
+	floor_texImage[0] = stbi_load("images/check.bmp", &imageWidth[2], &imageHeight[2],&nrChannels,0);
+
+	
 
 	// generate identifier for wall texture object and set wall texture properties
 	glGenTextures(2, wall_textureID);
 	glBindTexture(GL_TEXTURE_2D, wall_textureID[0]);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth[0], imageHeight[0], 0, GL_BGR, GL_UNSIGNED_BYTE, wall_texImage[0]);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imageWidth[0], imageHeight[0], 0, GL_RGB, GL_UNSIGNED_BYTE, wall_texImage[0]);
 	glGenerateMipmap(GL_TEXTURE_2D);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -378,7 +382,7 @@ static void init(GLFWwindow* window) {
 
 	glBindTexture(GL_TEXTURE_2D, wall_textureID[1]);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth[1], imageHeight[1], 0, GL_BGR, GL_UNSIGNED_BYTE, wall_texImage[1]);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imageWidth[1], imageHeight[1], 0, GL_RGB, GL_UNSIGNED_BYTE, wall_texImage[1]);
 	glGenerateMipmap(GL_TEXTURE_2D);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -390,7 +394,7 @@ static void init(GLFWwindow* window) {
 	glGenTextures(1, floor_textureID);
 	glBindTexture(GL_TEXTURE_2D, floor_textureID[0]);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth[2], imageHeight[2], 0, GL_BGR, GL_UNSIGNED_BYTE, floor_texImage[0]);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imageWidth[2], imageHeight[2], 0, GL_RGB, GL_UNSIGNED_BYTE, floor_texImage[0]);
 	glGenerateMipmap(GL_TEXTURE_2D);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -482,20 +486,36 @@ static void update_scene(GLFWwindow* window) {
 
 	g_camera.update(moveForward, strafeRight);	// update camera
 }
-void draw_walls() {
+void draw_walls(bool bReflect) {
 	glUseProgram(g_shaderProgramID);	// use the shaders associated with the shader program
 
 	glm::mat4 MVP;
 	glm::mat4 MV;
 	glm::mat4 V;
 	//render walls
+	glm::mat4 reflectMatrix = mat4(1.0f);
+	glm::mat4 modelMatrix = mat4(1.0f);
 
+	glm::vec3 lightPosition = g_lightPoint.position;
+
+	if (bReflect)
+	{
+		reflectMatrix = glm::scale(vec3(1.0f, -1.0f, 1.0f));
+		lightPosition = vec3(reflectMatrix * vec4(lightPosition, 1.0f));
+	}
+	else
+	{
+		reflectMatrix = mat4(1.0f);
+	}
+
+
+	
 	for (int i = 0; i < 4; i++) {
 		glBindVertexArray(g_VAO[i]);		// make VAO active
-
+		modelMatrix = reflectMatrix * wall_modelMatrix[i];
 		// set uniform shader variables
-		MVP = g_camera.getProjectionMatrix() * g_camera.getViewMatrix() * wall_modelMatrix[i];
-		MV = g_camera.getViewMatrix() * wall_modelMatrix[i];
+		MVP = g_camera.getProjectionMatrix() * g_camera.getViewMatrix() * modelMatrix;
+		MV = g_camera.getViewMatrix() * modelMatrix;
 		V = g_camera.getViewMatrix();
 		glUniformMatrix4fv(g_MVP_Index[0], 1, GL_FALSE, &MVP[0][0]);
 		glUniformMatrix4fv(g_MV_Index[0], 1, GL_FALSE, &MV[0][0]);
@@ -532,6 +552,8 @@ void draw_floor() {
 	glm::mat4 MVP;
 	glm::mat4 MV;
 	glm::mat4 V;
+
+	
 
 	// draw floor
 	glBindVertexArray(g_VAO[4]);		// make VAO active
@@ -573,16 +595,48 @@ void draw_floor() {
 
 static void render_scene()
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	// clear colour buffer and depth buffer
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	draw_walls(false);
+	/*
+	// clear buffers
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
+	// disable depth buffer and draw mirror surface to stencil buffer
+	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);  //disable any modification of all color components
+	glDepthMask(GL_FALSE);                                //disable any modification to depth buffer
+	glEnable(GL_STENCIL_TEST);                            //enable stencil testing
+
+	//setup the stencil buffer for a function reference value
+	glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
+	glStencilFunc(GL_ALWAYS, 1, 1);
 
 	draw_floor();
 
-	draw_walls();
-	
-	
+	//enable depth buffer, draw reflected geometry where stencil buffer passes
 
-	glFlush();
+		//render where the stencil buffer equal to 1
+	glStencilFunc(GL_EQUAL, 1, 1);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);   //allow all color components to be modified 
+	glDepthMask(GL_TRUE);                              //allow depth buffer contents to be modified
+
+	draw_walls(true);
+
+	glDisable(GL_STENCIL_TEST);		//disable stencil testing
+
+//blend in reflection
+	glEnable(GL_BLEND);		//enable blending            
+	glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+
+	draw_floor();
+
+	glDisable(GL_BLEND);	//disable blending
+
+	draw_walls(false);
+	*/
+	glFlush();	// flush the pipeline
 }
 
 

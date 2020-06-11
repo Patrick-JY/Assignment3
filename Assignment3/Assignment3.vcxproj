@@ -153,6 +153,8 @@
     <None Include="ColorFS.frag" />
     <None Include="LightAndTextureFS.frag" />
     <None Include="LightAndTextureVS.vert" />
+    <None Include="LightWithAlphaFS.frag" />
+    <None Include="LightWithAlphaVS.vert" />
     <None Include="NormalMapFS.frag" />
     <None Include="NormalMapVS.vert" />
     <None Include="VS.vert" />
@@ -161,6 +163,7 @@
     <ClInclude Include="bmpfuncs.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="shader.h" />
+    <ClInclude Include="stb_image.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="bmpfuncs.cpp" />

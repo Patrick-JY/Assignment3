@@ -62,6 +62,7 @@ unsigned char* readBitmapRGBImage(const char *filename, int* widthOut, int* heig
 			imageData[i*rowSize + j] = colour[0];
 			imageData[i*rowSize + j + 1] = colour[1];
 			imageData[i*rowSize + j + 2] = colour[2];
+			
 		}
 		// in the bmp format, each row has to be a multiple of 4
 		// read in the junk data and throw it away
@@ -108,7 +109,7 @@ void writeBitmapRGBImage(const char *filename, char* imageData, int width, int h
 	int rowSize;		// size per row in bytes
 	int fileSize;		// file size in bytes (image size + header size)
 	int i, j;
-	char colour[3];
+	char colour[4];
 
 	// compute amount of padding so that each row is a multiple of 4
 	padSize = width % 4;
@@ -165,12 +166,13 @@ void writeBitmapRGBImage(const char *filename, char* imageData, int width, int h
 			colour[0] = (char)imageData[i*rowSize + j + 2];
 			colour[1] = (char)imageData[i*rowSize + j + 1];
 			colour[2] = (char)imageData[i*rowSize + j];
+			colour[3] = (char)1.0f;
 			outFileStream.write(colour, 3);
 		}
 
 		// in bmp format rows must be a multiple of 4-bytes, add junk padding if required
 		for (j = 0; j < padSize; j++) {
-			outFileStream.write(colour, 3);
+			outFileStream.write(colour, 4);
 		}
 	}
 
