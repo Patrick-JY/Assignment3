@@ -151,6 +151,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="ColorFS.frag" />
+    <None Include="LightAndTextureFS.frag" />
+    <None Include="LightAndTextureVS.vert" />
     <None Include="NormalMapFS.frag" />
     <None Include="NormalMapVS.vert" />
     <None Include="VS.vert" />

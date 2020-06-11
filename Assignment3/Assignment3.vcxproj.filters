@@ -27,6 +27,12 @@
     <None Include="NormalMapVS.vert">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="LightAndTextureFS.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="LightAndTextureVS.vert">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="shader.h">
