@@ -188,9 +188,216 @@ Vertex painting_vertices[] = {
 	1.0f, 0.0f,			// texture coordinate
 };
 
+Vertex cube_vertices[] = {
+	// Front: triangle 1
+	// vertex 1
+	-0.5f, 0.5f, 0.5f,	// position
+	0.0f, 0.0f, 1.0f,	// normal
+	0.0f, 1.0f,			// texture coordinate
+	
+	// vertex 2
+	-0.5f, -0.5f, 0.5f,	// position
+	0.0f, 0.0f, 1.0f,	// normal
+	0.0f, 0.0f,			// texture coordinate
+	
+	// vertex 3
+	0.5f, 0.5f, 0.5f,	// position
+	0.0f, 0.0f, 1.0f,	// normal
+	1.0f, 1.0f,			// texture coordinate
+	
+
+	// triangle 2
+	// vertex 1
+	0.5f, 0.5f, 0.5f,	// position
+	0.0f, 0.0f, 1.0f,	// normal
+	1.0f, 1.0f,			// texture coordinate
+	
+	// vertex 2
+	-0.5f, -0.5f, 0.5f,	// position
+	0.0f, 0.0f, 1.0f,	// normal
+	0.0f, 0.0f,			// texture coordinate
+	
+	// vertex 3
+	0.5f, -0.5f, 0.5f,	// position
+	0.0f, 0.0f, 1.0f,	// normal
+	1.0f, 0.0f,			// texture coordinate
+	
+
+	// Right: triangle 3
+	// vertex 1
+	0.5f, 0.5f, 0.5f,	// position
+	1.0f, 0.0f, 0.0f,	// normal
+	0.0f, 1.0f,			// texture coordinate
+	
+	// vertex 2
+	0.5f, -0.5f, 0.5f,	// position
+	1.0f, 0.0f, 0.0f,	// normal
+	0.0f, 0.0f,			// texture coordinate
+	
+	// vertex 3
+	0.5f, 0.5f, -0.5f,	// position
+	1.0f, 0.0f, 0.0f,	// normal
+	1.0f, 1.0f,			// texture coordinate
+	
+
+	// triangle 4
+	// vertex 1
+	0.5f, 0.5f, -0.5f,	// position
+	1.0f, 0.0f, 0.0f,	// normal
+	1.0f, 1.0f,			// texture coordinate
+	
+	// vertex 2
+	0.5f, -0.5f, 0.5f,	// position
+	1.0f, 0.0f, 0.0f,	// normal
+	0.0f, 0.0f,			// texture coordinate
+	
+	// vertex 3
+	0.5f, -0.5f, -0.5f,	// position
+	1.0f, 0.0f, 0.0f,	// normal
+	1.0f, 0.0f,			// texture coordinate
+	
+
+	// Back: triangle 5
+	// vertex 1
+	0.5f, -0.5f, -0.5f,	// position
+	0.0f, 0.0f, -1.0f,	// normal
+	0.0f, 0.0f,			// texture coordinate
+	
+	// vertex 2
+	-0.5f, -0.5f, -0.5f,// position
+	0.0f, 0.0f, -1.0f,	// normal
+	1.0f, 0.0f,			// texture coordinate
+	
+	// vertex 3
+	0.5f, 0.5f, -0.5f,	// position
+	0.0f, 0.0f, -1.0f,	// normal
+	0.0f, 1.0f,			// texture coordinate
+	
+
+	// triangle 6
+	// vertex 1
+	0.5f, 0.5f, -0.5f,	// position
+	0.0f, 0.0f, -1.0f,	// normal
+	0.0f, 1.0f,			// texture coordinate
+	
+	// vertex 2
+	-0.5f, -0.5f, -0.5f,// position
+	0.0f, 0.0f, -1.0f,	// normal
+	1.0f, 0.0f,			// texture coordinate
+	
+	// vertex 3
+	-0.5f, 0.5f, -0.5f,	// position
+	0.0f, 0.0f, -1.0f,	// normal
+	1.0f, 1.0f,			// texture coordinate
+	
+
+	// Left: triangle 7
+	// vertex 1
+	-0.5f, -0.5f, 0.5f,	// position
+	-1.0f, 0.0f, 0.0f,	// normal
+	1.0f, 0.0f,			// texture coordinate
+	
+	// vertex 2
+	-0.5f, 0.5f, 0.5f,	// position
+	-1.0f, 0.0f, 0.0f,	// normal
+	1.0f, 1.0f,			// texture coordinate
+	
+	// vertex 3
+	-0.5f, -0.5f, -0.5f,	// position
+	-1.0f, 0.0f, 0.0f,	// normal
+	0.0f, 0.0f,			// texture coordinate
+	
+
+	// triangle 8
+	// vertex 1
+	-0.5f, -0.5f, -0.5f,	// position
+	-1.0f, 0.0f, 0.0f,	// normal
+	0.0f, 0.0f,			// texture coordinate
+	
+	// vertex 2
+	-0.5f, 0.5f, 0.5f,	// position
+	-1.0f, 0.0f, 0.0f,	// normal
+	1.0f, 1.0f,			// texture coordinate
+	
+	// vertex 3
+	-0.5f, 0.5f, -0.5f,	// position
+	-1.0f, 0.0f, 0.0f,	// normal
+	0.0f, 1.0f,			// texture coordinate
+	
+
+	// Top: triangle 9
+	// vertex 1
+	-0.5f, 0.5f, 0.5f,	// position
+	0.0f, 1.0f, 0.0f,	// normal
+	0.0f, 0.0f,			// texture coordinate
+	
+	// vertex 2
+	0.5f, 0.5f, 0.5f,	// position
+	0.0f, 1.0f, 0.0f,	// normal
+	1.0f, 0.0f,			// texture coordinate
+	
+	// vertex 3
+	-0.5f, 0.5f, -0.5f,	// position
+	0.0f, 1.0f, 0.0f,	// normal
+	0.0f, 1.0f,			// texture coordinate
+	
+
+	// triangle 10
+	// vertex 1
+	-0.5f, 0.5f, -0.5f,	// position
+	0.0f, 1.0f, 0.0f,	// normal
+	0.0f, 1.0f,			// texture coordinate
+	
+	// vertex 2
+	0.5f, 0.5f, 0.5f,	// position
+	0.0f, 1.0f, 0.0f,	// normal
+	1.0f, 0.0f,			// texture coordinate
+	
+	// vertex 3
+	0.5f, 0.5f, -0.5f,	// position
+	0.0f, 1.0f, 0.0f,	// normal
+	1.0f, 1.0f,			// texture coordinate
+	
+
+	// Bottom: triangle 11
+	// vertex 1
+	0.5f, -0.5f, 0.5f,	// position
+	0.0f, -1.0f, 0.0f,	// normal
+	1.0f, 1.0f,			// texture coordinate
+	
+	// vertex 2
+	-0.5f, -0.5f, 0.5f,	// position
+	0.0f, -1.0f, 0.0f,	// normal
+	0.0f, 1.0f,			// texture coordinate
+	
+	// vertex 3
+	0.5f, -0.5f, -0.5f,	// position
+	0.0f, -1.0f, 0.0f,	// normal
+	1.0f, 0.0f,			// texture coordinate
+	
+
+	// triangle 12
+	// vertex 1
+	0.5f, -0.5f, -0.5f,	// position
+	0.0f, -1.0f, 0.0f,	// normal
+	1.0f, 0.0f,			// texture coordinate
+	
+	// vertex 2
+	-0.5f, -0.5f, 0.5f,	// position
+	0.0f, -1.0f, 0.0f,	// normal
+	0.0f, 1.0f,			// texture coordinate
+	
+	// vertex 3
+	-0.5f, -0.5f, -0.5f,// position
+	0.0f, -1.0f, 0.0f,	// normal
+	0.0f, 0.0f,			// texture coordinate
+	
+
+};
+
 
 //Global Vars
-const int vbo_vao_number = 7; //needed to make sure I clean up everything properly
+const int vbo_vao_number = 8; //needed to make sure I clean up everything properly
 
 
 
@@ -220,6 +427,7 @@ GLuint g_materialShininessIndex[shaderNumber];
 glm::mat4 floorMatrix; //floors matrix
 glm::mat4 wall_modelMatrix[4]; //wall matrix
 glm::mat4 painting_modelMatrix[2]; //painting matrix
+glm::mat4 cube_modelMatrix[1];
 
 Light g_lightPoint;				// light properties
 Light g_lightDirectional;		// light properties
@@ -249,7 +457,15 @@ GLuint floor_textureID[1];
 unsigned char* painting_texImage[2];
 GLuint painting_textureID[2];
 
+//pedestal texture
+unsigned char* pedestal_texImage;
+GLuint pedestal_textureID[1];
 
+
+//tw vars
+float lightx;
+float lighty;
+float lightz;
 bool wireFrame = false;
 
 
@@ -336,7 +552,9 @@ static void init(GLFWwindow* window) {
 	//glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
 	glEnable(GL_DEPTH_TEST);
-
+	lightx = 1.0f;
+	lighty = 1.0f;
+	lightz = 1.0f;
 	//create and compile our GLSL programs from the shader files
 	g_shaderProgramID = loadShaders("NormalMapVS.vert", "NormalMapFS.frag");
 	textureLight_shaderProgramID = loadShaders("LightAndTextureVS.vert","LightAndTextureFS.frag" );
@@ -404,6 +622,7 @@ static void init(GLFWwindow* window) {
 	wall_modelMatrix[3] = glm::mat4(1.0f);
 	painting_modelMatrix[0] = glm::mat4(1.0f);
 	painting_modelMatrix[1] = glm::mat4(1.0f);
+	cube_modelMatrix[0] = glm::mat4(1.0f);
 	//init view matrix
 	
 
@@ -417,7 +636,7 @@ static void init(GLFWwindow* window) {
 
 	// initialise point light properties
 
-	g_lightPoint.position = glm::vec3(1.0f, 1.0f, 1.0f);
+	g_lightPoint.position = glm::vec3(lightx, lighty, lightz);
 	g_lightPoint.ambient = glm::vec3(1.0f, 1.0f, 1.0f);
 	g_lightPoint.diffuse = glm::vec3(1.0f, 1.0f, 1.0f);
 	g_lightPoint.specular = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -435,8 +654,9 @@ static void init(GLFWwindow* window) {
 	wall_texImage[0] = readBitmapRGBImage("images/Fieldstone.bmp", &imageWidth[0], &imageHeight[0]);
 	wall_texImage[1] = readBitmapRGBImage("images/FieldstoneBumpDOT3.bmp", &imageWidth[1], &imageHeight[1]);
 	floor_texImage[0] = readBitmapRGBImage("images/check.bmp", &imageWidth[2], &imageHeight[2]);
-	painting_texImage[0] = readBitmapRGBImage("images/guildwars-2.bmp", &imageWidth[3], &imageHeight[3]);
-	painting_texImage[1] = readBitmapRGBImage("images/merrychristmas.bmp", &imageWidth[4], &imageHeight[4]);
+	painting_texImage[0] = readBitmapRGBImage("images/painting1.bmp", &imageWidth[3], &imageHeight[3]);
+	painting_texImage[1] = readBitmapRGBImage("images/tile4.bmp", &imageWidth[4], &imageHeight[4]);
+	pedestal_texImage = readBitmapRGBImage("images/smile.bmp", &imageWidth[5], &imageHeight[5]);
 	// generate identifier for wall texture object and set wall texture properties
 	glGenTextures(2, wall_textureID);
 	glBindTexture(GL_TEXTURE_2D, wall_textureID[0]);
@@ -492,7 +712,16 @@ static void init(GLFWwindow* window) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
+	glGenTextures(1, pedestal_textureID);
+	glBindTexture(GL_TEXTURE_2D, pedestal_textureID[0]);
 
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth[5], imageHeight[5], 0, GL_BGR, GL_UNSIGNED_BYTE, pedestal_texImage);
+	glGenerateMipmap(GL_TEXTURE_2D);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 
 	glGenBuffers(vbo_vao_number, g_VBO);
@@ -549,6 +778,22 @@ static void init(GLFWwindow* window) {
 		glEnableVertexAttribArray(texCoordIndex[1]);
 
 	}
+
+	//make pedestal
+	glBindBuffer(GL_ARRAY_BUFFER, g_VBO[7]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(cube_vertices), cube_vertices, GL_STATIC_DRAW);
+	glBindVertexArray(g_VAO[7]);
+	glBindBuffer(GL_ARRAY_BUFFER, g_VBO[7]);
+	glVertexAttribPointer(positionIndex[1], 3, GL_FLOAT, GL_FALSE, sizeof(simpleVertex), reinterpret_cast<void*>(offsetof(simpleVertex, position)));
+	glVertexAttribPointer(normalIndex[1], 3, GL_FLOAT, GL_FALSE, sizeof(simpleVertex), reinterpret_cast<void*>(offsetof(simpleVertex, normal)));
+	//glVertexAttribPointer(tangentIndex, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, tangent)));
+	glVertexAttribPointer(texCoordIndex[1], 2, GL_FLOAT, GL_FALSE, sizeof(simpleVertex), reinterpret_cast<void*>(offsetof(simpleVertex, texCoord)));
+
+	glEnableVertexAttribArray(positionIndex[1]);	// enable vertex attributes
+	glEnableVertexAttribArray(normalIndex[1]);
+	//glEnableVertexAttribArray(tangentIndex);
+	glEnableVertexAttribArray(texCoordIndex[1]);
+
 	
 
 
@@ -571,8 +816,15 @@ static void init(GLFWwindow* window) {
 	//paintings
 	painting_modelMatrix[0] *= glm::scale(vec3(0.50f, 0.50f, 0.50f));
 	painting_modelMatrix[1] *= glm::scale(vec3(0.50f, 0.50f, 0.50f));
-	painting_modelMatrix[0] = glm::translate(painting_modelMatrix[0], vec3(0.0f, 0.0f, 0.2f));
+	painting_modelMatrix[1] = glm::translate(painting_modelMatrix[1], vec3(6.0f, 0.0f, 0.05f));
+	painting_modelMatrix[0] *= glm::rotate(painting_modelMatrix[0], radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	painting_modelMatrix[0] = glm::translate(painting_modelMatrix[0], vec3(-5.0f, 0.0f, -3.9f));
 	
+	//pedestal
+	cube_modelMatrix[0] *= glm::scale(vec3(0.75f, 0.75f, 0.75f));
+	cube_modelMatrix[0] = glm::translate(cube_modelMatrix[0], vec3(2.0f, -0.8f, 3.0f));
+
+
 }
 
 
@@ -598,6 +850,51 @@ static void update_scene(GLFWwindow* window) {
 
 	g_camera.update(moveForward, strafeRight);	// update camera
 }
+
+
+void draw_cube() {
+	glUseProgram(textureLight_shaderProgramID);
+	glm::mat4 MVP;
+	glm::mat4 MV;
+	glm::mat4 V;
+
+	//render cube
+	glBindVertexArray(g_VAO[7]);		// make VAO active
+
+		// set uniform shader variables
+	MVP = g_camera.getProjectionMatrix() * g_camera.getViewMatrix() * cube_modelMatrix[0] ;
+	MV = g_camera.getViewMatrix() * cube_modelMatrix[0];
+	V = g_camera.getViewMatrix();
+	glUniformMatrix4fv(g_MVP_Index[1], 1, GL_FALSE, &MVP[0][0]);
+	glUniformMatrix4fv(g_MV_Index[1], 1, GL_FALSE, &MV[0][0]);
+	glUniformMatrix4fv(g_V_Index[1], 1, GL_FALSE, &V[0][0]);
+
+	glUniform3fv(g_lightPositionIndex[1], 1, &g_lightPoint.position[0]);
+	glUniform3fv(g_lightAmbientIndex[1], 1, &g_lightPoint.ambient[0]);
+	glUniform3fv(g_lightDiffuseIndex[1], 1, &g_lightPoint.diffuse[0]);
+	glUniform3fv(g_lightSpecularIndex[1], 1, &g_lightPoint.specular[0]);
+	//glUniform1i(g_lightTypeIndex[0], g_lightPoint.type);
+
+	glUniform3fv(g_materialAmbientIndex[1], 1, &wall_material.ambient[0]);
+	glUniform3fv(g_materialDiffuseIndex[1], 1, &wall_material.diffuse[0]);
+	glUniform3fv(g_materialSpecularIndex[1], 1, &wall_material.specular[0]);
+	glUniform1fv(g_materialShininessIndex[1], 1, &wall_material.shininess);
+
+	glUniform1i(g_texSamplerIndex[1], 0);
+	glUniform1i(g_normalSamplerIndex[1], 1);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D,pedestal_textureID[0]);
+
+
+
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+
+	//end draw floor
+
+
+}
+
 
 void draw_painting() {
 	glUseProgram(textureLight_shaderProgramID);
@@ -741,6 +1038,7 @@ static void render_scene()
 	
 	draw_painting();
 	
+	draw_cube();
 
 	glFlush();
 }
@@ -896,6 +1194,10 @@ int main(void)
 	TwAddVarRW(TweakBar, "FPS", TW_TYPE_INT32, &FPS, "group = Frame");
 	TwAddVarRW(TweakBar, "Frame Time", TW_TYPE_DOUBLE, &frameTime, "group = Frame precision = 4");
 
+	//Create Light Frame
+	TwAddVarRW(TweakBar, "Position x", TW_TYPE_FLOAT, &lightx, "group = Light");
+	TwAddVarRW(TweakBar, "Position y", TW_TYPE_FLOAT, &lighty, "group = Light");
+	TwAddVarRW(TweakBar, "Position z", TW_TYPE_FLOAT, &lightz, "group = Light");
 
 	// initialise rendering states
 	init(window);
