@@ -64,6 +64,7 @@ typedef struct Material {
 	float shininess;
 };
 
+
 Vertex wall_vertices[] = {
 	// Front: triangle 1
 	// vertex 1
@@ -77,32 +78,32 @@ Vertex wall_vertices[] = {
 	1.0f, 0.0f, 0.0f,	// tangent
 	0.0f, 0.0f,			// texture coordinate
 	// vertex 3
-	1.0f, 1.0f, 0.0f,	// position
+	4.0f, 1.0f, 0.0f,	// position
 	0.0f, 0.0f, 1.0f,	// normal
 	1.0f, 0.0f, 0.0f,	// tangent
-	1.0f, 1.0f,			// texture coordinate
+	4.0f, 1.0f,			// texture coordinate
 
 	// triangle 2
 	// vertex 1
-	1.0f, 1.0f, 0.0f,	// position
+	4.0f, 1.0f, 0.0f,	// position
 	0.0f, 0.0f, 1.0f,	// normal
 	1.0f, 0.0f, 0.0f,	// tangent
-	1.0f, 1.0f,			// texture coordinate
+	4.0f, 1.0f,			// texture coordinate
 	// vertex 2
 	-1.0f, -1.0f, 0.0f,	// position
 	0.0f, 0.0f, 1.0f,	// normal
 	1.0f, 0.0f, 0.0f,	// tangent
 	0.0f, 0.0f,			// texture coordinate
 	// vertex 3
-	1.0f, -1.0f, 0.0f,	// position
+	4.0f, -1.0f, 0.0f,	// position
 	0.0f, 0.0f, 1.0f,	// normal
 	1.0f, 0.0f, 0.0f,	// tangent
-	1.0f, 0.0f,			// texture coordinate
+	4.0f, 0.0f,			// texture coordinate
 };
 
 
 //Global Vars
-const int vbo_vao_number = 1; //needed to make sure I clean up everything properly
+const int vbo_vao_number = 4; //needed to make sure I clean up everything properly
 
 Mesh nucleusMesh;
 Mesh electronMesh[3];
@@ -142,7 +143,11 @@ glm::mat4 g_projectionMatrix;
 
 glm::mat4 wall_modelMatrix[4];
 
+double frameTime = 0.0f;				// frame time
+
 Camera g_camera;
+bool g_moveCamera = false;
+bool g_centreCursor = false;
 
 GLuint g_windowWidth = 800; //window dimensions
 GLuint g_windowHeight = 600;
@@ -271,7 +276,9 @@ static void init(GLFWwindow* window) {
 
 	//init model matrices
 	wall_modelMatrix[0] = glm::mat4(1.0f);
-
+	wall_modelMatrix[1] = glm::mat4(1.0f);
+	wall_modelMatrix[2] = glm::mat4(1.0f);
+	wall_modelMatrix[3] = glm::mat4(1.0f);
 	//init view matrix
 	
 
@@ -325,23 +332,30 @@ static void init(GLFWwindow* window) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-	//initialise vbo and vao
 	glGenBuffers(vbo_vao_number, g_VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, g_VBO[0]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(wall_vertices), wall_vertices, GL_STATIC_DRAW);
 	glGenVertexArrays(vbo_vao_number, g_VAO);
+	
+	//generate walls
+	for (int i = 0; i < 4; i++) {
+		
+		glBindBuffer(GL_ARRAY_BUFFER, g_VBO[i]);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(wall_vertices), wall_vertices, GL_STATIC_DRAW);
+		
 
-	glBindVertexArray(g_VAO[0]);
-	glBindBuffer(GL_ARRAY_BUFFER, g_VBO[0]);
-	glVertexAttribPointer(positionIndex, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, position)));
-	glVertexAttribPointer(normalIndex, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, normal)));
-	glVertexAttribPointer(tangentIndex, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, tangent)));
-	glVertexAttribPointer(texCoordIndex, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, texCoord)));
+		glBindVertexArray(g_VAO[i]);
+		glBindBuffer(GL_ARRAY_BUFFER, g_VBO[i]);
+		glVertexAttribPointer(positionIndex, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, position)));
+		glVertexAttribPointer(normalIndex, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, normal)));
+		glVertexAttribPointer(tangentIndex, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, tangent)));
+		glVertexAttribPointer(texCoordIndex, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, texCoord)));
 
-	glEnableVertexAttribArray(positionIndex);	// enable vertex attributes
-	glEnableVertexAttribArray(normalIndex);
-	glEnableVertexAttribArray(tangentIndex);
-	glEnableVertexAttribArray(texCoordIndex);
+		glEnableVertexAttribArray(positionIndex);	// enable vertex attributes
+		glEnableVertexAttribArray(normalIndex);
+		glEnableVertexAttribArray(tangentIndex);
+		glEnableVertexAttribArray(texCoordIndex);
+	}
+
+
 
 
 }
@@ -349,7 +363,7 @@ static void init(GLFWwindow* window) {
 
 // function used to update the scene
 
-static void update_scene(GLFWwindow* window, float frameTime) {
+static void update_scene(GLFWwindow* window) {
 	// variables to store forward/back and strafe movement
 	float moveForward = 0;
 	float strafeRight = 0;
@@ -438,10 +452,50 @@ static void cursor_position_callback(GLFWwindow* window, double xpos, double ypo
 {
 	// pass mouse data to tweak bar
 	TwEventMousePosGLFW(xpos, ypos);
+	// variables to store mouse cursor coordinates
+	static double previous_xpos = xpos;
+	static double previous_ypos = ypos;
+	double delta_x = previous_xpos - xpos;
+	double delta_y = previous_ypos - ypos;
+
+	if (g_moveCamera)
+	{
+		if (!g_centreCursor) // ignore camera update the first time mouse cursor is centred
+		{
+			// pass mouse movement to camera class to update its yaw and pitch
+			g_camera.updateRotation(delta_x * ROTATION_SENSITIVITY * frameTime, delta_y * ROTATION_SENSITIVITY * frameTime);
+		}
+		else
+		{
+			g_centreCursor = false;
+		}
+	}
+
+	// update previous mouse coordinates
+	previous_xpos = xpos;
+	previous_ypos = ypos;
+
+	// pass mouse data to tweak bar
+	TwEventMousePosGLFW(xpos, ypos);
 }
 
 static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
 	TwEventMouseButtonGLFW(button, action);
+	if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
+	{
+		// use mouse to move camera, hence use disable cursor mode
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+		g_centreCursor = true;	// mouse cursor position is centred
+		g_moveCamera = true;
+	}
+	else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE)
+	{
+		// use mouse to move camera, hence use disable cursor mode
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+
+		g_moveCamera = false;
+	}
 }
 
 
@@ -454,7 +508,7 @@ int main(void)
 
 	double lastUpdateTime = glfwGetTime();	// last update time
 	double elapsedTime = lastUpdateTime;	// time elapsed since last update
-	double frameTime = 0.0f;				// frame time
+	
 	int frameCount = 0;						// number of frames since last update
 	int FPS = 0;							// frames per second
 
@@ -526,7 +580,7 @@ int main(void)
 	// the rendering loop
 	while (!glfwWindowShouldClose(window))
 	{
-		update_scene(window,frameTime);		// update the scene
+		update_scene(window);		// update the scene
 
 		if (wireFrame)
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
