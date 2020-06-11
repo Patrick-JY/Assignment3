@@ -45,6 +45,13 @@ typedef struct simpleVertex
 	GLfloat texCoord[2];
 }simpleVertex;
 
+struct simpleLight
+{
+	vec3 position;
+	vec3 ambient;
+	vec3 diffuse;
+	vec3 specular;
+};
 
 //mesh properties
 typedef struct Mesh
@@ -131,17 +138,17 @@ Vertex floor_vertices[] = {
 	// vertex 1
 	2.5f, 2.5f, 0.0f,	// position
 	0.0f, 0.0f, 1.0f,	// normal
-	1.0f, 0.0f, 0.0f,	// tangent
+	//1.0f, 0.0f, 0.0f,	// tangent
 	2.5f, 2.5f,			// texture coordinate
 	// vertex 2
 	-2.5f, -2.5f, 0.0f,	// position
 	0.0f, 0.0f, 1.0f,	// normal
-	1.0f, 0.0f, 0.0f,	// tangent
+	//1.0f, 0.0f, 0.0f,	// tangent
 	0.0f, 0.0f,			// texture coordinate
 	// vertex 3
 	2.5f, -2.5f, 0.0f,	// position
 	0.0f, 0.0f, 1.0f,	// normal
-	1.0f, 0.0f, 0.0f,	// tangent
+	//1.0f, 0.0f, 0.0f,	// tangent
 	2.5f, 0.0f,			// texture coordinate
 };
 
@@ -150,34 +157,34 @@ Vertex painting_vertices[] = {
 	// vertex 1
 	-1.0f, 1.0f, 0.0f,	// position
 	0.0f, 0.0f, 1.0f,	// normal
-	1.0f, 0.0f, 0.0f,	// tangent
+	//1.0f, 0.0f, 0.0f,	// tangent
 	0.0f, 1.0f,			// texture coordinate
 	// vertex 2
 	-1.0f, -1.0f, 0.0f,	// position
 	0.0f, 0.0f, 1.0f,	// normal
-	1.0f, 0.0f, 0.0f,	// tangent
+	//1.0f, 0.0f, 0.0f,	// tangent
 	0.0f, 0.0f,			// texture coordinate
 	// vertex 3
 	1.0f, 1.0f, 0.0f,	// position
 	0.0f, 0.0f, 1.0f,	// normal
-	1.0f, 0.0f, 0.0f,	// tangent
+	//1.0f, 0.0f, 0.0f,	// tangent
 	1.0f, 1.0f,			// texture coordinate
 
 	// triangle 2
 	// vertex 1
 	1.0f, 1.0f, 0.0f,	// position
 	0.0f, 0.0f, 1.0f,	// normal
-	1.0f, 0.0f, 0.0f,	// tangent
+	//1.0f, 0.0f, 0.0f,	// tangent
 	1.0f, 1.0f,			// texture coordinate
 	// vertex 2
 	-1.0f, -1.0f, 0.0f,	// position
 	0.0f, 0.0f, 1.0f,	// normal
-	1.0f, 0.0f, 0.0f,	// tangent
+	//1.0f, 0.0f, 0.0f,	// tangent
 	0.0f, 0.0f,			// texture coordinate
 	// vertex 3
 	1.0f, -1.0f, 0.0f,	// position
 	0.0f, 0.0f, 1.0f,	// normal
-	1.0f, 0.0f, 0.0f,	// tangent
+	//1.0f, 0.0f, 0.0f,	// tangent
 	1.0f, 0.0f,			// texture coordinate
 };
 
@@ -191,7 +198,7 @@ GLuint g_IBO[vbo_vao_number];			// index buffer object identifier
 GLuint g_VBO[vbo_vao_number];
 GLuint g_VAO[vbo_vao_number];
 GLuint g_shaderProgramID = 0;
-GLuint floor_shaderProgramID = 0;
+GLuint textureLight_shaderProgramID = 0;
 const int shaderNumber = 2;
 GLuint g_MVP_Index[shaderNumber];
 GLuint g_MV_Index[shaderNumber];
@@ -332,7 +339,7 @@ static void init(GLFWwindow* window) {
 
 	//create and compile our GLSL programs from the shader files
 	g_shaderProgramID = loadShaders("NormalMapVS.vert", "NormalMapFS.frag");
-	
+	textureLight_shaderProgramID = loadShaders("LightAndTextureVS.vert","LightAndTextureFS.frag" );
 	GLuint positionIndex[shaderNumber];
 	GLuint normalIndex[shaderNumber];
 	GLuint texCoordIndex[shaderNumber];
@@ -366,7 +373,29 @@ static void init(GLFWwindow* window) {
 	g_materialShininessIndex[0] = glGetUniformLocation(g_shaderProgramID, "uMaterial.shininess");
 
 
-	
+	//for texture light shader
+
+	positionIndex[1] = glGetAttribLocation(textureLight_shaderProgramID, "aPosition");
+	normalIndex[1] = glGetAttribLocation(textureLight_shaderProgramID, "aNormal");
+	texCoordIndex[1] = glGetAttribLocation(textureLight_shaderProgramID, "aTexCoord");
+	g_MVP_Index[1] = glGetUniformLocation(textureLight_shaderProgramID, "uModelViewProjectionMatrix");
+	g_MV_Index[1] = glGetUniformLocation(textureLight_shaderProgramID, "uModelViewMatrix");
+	g_V_Index[1] = glGetUniformLocation(textureLight_shaderProgramID, "uViewMatrix");
+
+	g_texSamplerIndex[1] = glGetUniformLocation(textureLight_shaderProgramID, "uTextureSampler");
+
+	g_lightPositionIndex[1] = glGetUniformLocation(textureLight_shaderProgramID, "uLight.position");
+	g_lightAmbientIndex[1] = glGetUniformLocation(textureLight_shaderProgramID, "uLight.ambient");
+	g_lightDiffuseIndex[1] = glGetUniformLocation(textureLight_shaderProgramID, "uLight.diffuse");
+	g_lightSpecularIndex[1] = glGetUniformLocation(textureLight_shaderProgramID, "uLight.specular");
+
+	g_materialAmbientIndex[1] = glGetUniformLocation(textureLight_shaderProgramID, "uMaterial.ambient");
+	g_materialDiffuseIndex[1] = glGetUniformLocation(textureLight_shaderProgramID, "uMaterial.diffuse");
+	g_materialSpecularIndex[1] = glGetUniformLocation(textureLight_shaderProgramID, "uMaterial.specular");
+	g_materialShininessIndex[1] = glGetUniformLocation(textureLight_shaderProgramID, "uMaterial.shininess");
+
+
+
 	//init model matrices
 	floorMatrix = glm::mat4(1.0f);
 	wall_modelMatrix[0] = glm::mat4(1.0f);
@@ -387,6 +416,7 @@ static void init(GLFWwindow* window) {
 	g_camera.setProjection(glm::radians(45.0f), aspectRatio, 0.1f, 100.0f);
 
 	// initialise point light properties
+
 	g_lightPoint.position = glm::vec3(1.0f, 1.0f, 1.0f);
 	g_lightPoint.ambient = glm::vec3(1.0f, 1.0f, 1.0f);
 	g_lightPoint.diffuse = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -493,30 +523,30 @@ static void init(GLFWwindow* window) {
 	glBufferData(GL_ARRAY_BUFFER, sizeof(floor_vertices), floor_vertices, GL_STATIC_DRAW);
 	glBindVertexArray(g_VAO[4]);
 	glBindBuffer(GL_ARRAY_BUFFER, g_VBO[4]);
-	glVertexAttribPointer(positionIndex[0], 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, position)));
-	glVertexAttribPointer(normalIndex[0], 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, normal)));
-	glVertexAttribPointer(tangentIndex, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, tangent)));
-	glVertexAttribPointer(texCoordIndex[0], 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, texCoord)));
+	glVertexAttribPointer(positionIndex[1], 3, GL_FLOAT, GL_FALSE, sizeof(simpleVertex), reinterpret_cast<void*>(offsetof(simpleVertex, position)));
+	glVertexAttribPointer(normalIndex[1], 3, GL_FLOAT, GL_FALSE, sizeof(simpleVertex), reinterpret_cast<void*>(offsetof(simpleVertex, normal)));
+	//glVertexAttribPointer(tangentIndex, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, tangent)));
+	glVertexAttribPointer(texCoordIndex[1], 2, GL_FLOAT, GL_FALSE, sizeof(simpleVertex), reinterpret_cast<void*>(offsetof(simpleVertex, texCoord)));
 
-	glEnableVertexAttribArray(positionIndex[0]);	// enable vertex attributes
-	glEnableVertexAttribArray(normalIndex[0]);
-	glEnableVertexAttribArray(tangentIndex);
-	glEnableVertexAttribArray(texCoordIndex[0]);
+	glEnableVertexAttribArray(positionIndex[1]);	// enable vertex attributes
+	glEnableVertexAttribArray(normalIndex[1]);
+	//glEnableVertexAttribArray(tangentIndex);
+	glEnableVertexAttribArray(texCoordIndex[1]);
 	//making paintings
 	for (int i = 5; i < 7; i++) {
 		glBindBuffer(GL_ARRAY_BUFFER, g_VBO[i]);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(painting_vertices), painting_vertices, GL_STATIC_DRAW);
 		glBindVertexArray(g_VAO[i]);
 		glBindBuffer(GL_ARRAY_BUFFER, g_VBO[i]);
-		glVertexAttribPointer(positionIndex[0], 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, position)));
-		glVertexAttribPointer(normalIndex[0], 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, normal)));
-		glVertexAttribPointer(tangentIndex, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, tangent)));
-		glVertexAttribPointer(texCoordIndex[0], 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, texCoord)));
+		glVertexAttribPointer(positionIndex[1], 3, GL_FLOAT, GL_FALSE, sizeof(simpleVertex), reinterpret_cast<void*>(offsetof(simpleVertex, position)));
+		glVertexAttribPointer(normalIndex[1], 3, GL_FLOAT, GL_FALSE, sizeof(simpleVertex), reinterpret_cast<void*>(offsetof(simpleVertex, normal)));
+		//glVertexAttribPointer(tangentIndex, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, tangent)));
+		glVertexAttribPointer(texCoordIndex[1], 2, GL_FLOAT, GL_FALSE, sizeof(simpleVertex), reinterpret_cast<void*>(offsetof(simpleVertex, texCoord)));
 
-		glEnableVertexAttribArray(positionIndex[0]);	// enable vertex attributes
-		glEnableVertexAttribArray(normalIndex[0]);
-		glEnableVertexAttribArray(tangentIndex);
-		glEnableVertexAttribArray(texCoordIndex[0]);
+		glEnableVertexAttribArray(positionIndex[1]);	// enable vertex attributes
+		glEnableVertexAttribArray(normalIndex[1]);
+		//glEnableVertexAttribArray(tangentIndex);
+		glEnableVertexAttribArray(texCoordIndex[1]);
 
 	}
 	
@@ -570,7 +600,7 @@ static void update_scene(GLFWwindow* window) {
 }
 
 void draw_painting() {
-	glUseProgram(g_shaderProgramID);
+	glUseProgram(textureLight_shaderProgramID);
 	glm::mat4 MVP;
 	glm::mat4 MV;
 	glm::mat4 V;
@@ -583,23 +613,23 @@ void draw_painting() {
 		MVP = g_camera.getProjectionMatrix() * g_camera.getViewMatrix() * painting_modelMatrix[i];
 		MV = g_camera.getViewMatrix() * painting_modelMatrix[i];
 		V = g_camera.getViewMatrix();
-		glUniformMatrix4fv(g_MVP_Index[0], 1, GL_FALSE, &MVP[0][0]);
-		glUniformMatrix4fv(g_MV_Index[0], 1, GL_FALSE, &MV[0][0]);
-		glUniformMatrix4fv(g_V_Index[0], 1, GL_FALSE, &V[0][0]);
+		glUniformMatrix4fv(g_MVP_Index[1], 1, GL_FALSE, &MVP[0][0]);
+		glUniformMatrix4fv(g_MV_Index[1], 1, GL_FALSE, &MV[0][0]);
+		glUniformMatrix4fv(g_V_Index[1], 1, GL_FALSE, &V[0][0]);
 
-		glUniform3fv(g_lightPositionIndex[0], 1, &g_lightPoint.position[0]);
-		glUniform3fv(g_lightAmbientIndex[0], 1, &g_lightPoint.ambient[0]);
-		glUniform3fv(g_lightDiffuseIndex[0], 1, &g_lightPoint.diffuse[0]);
-		glUniform3fv(g_lightSpecularIndex[0], 1, &g_lightPoint.specular[0]);
-		glUniform1i(g_lightTypeIndex[0], g_lightPoint.type);
+		glUniform3fv(g_lightPositionIndex[1], 1, &g_lightPoint.position[0]);
+		glUniform3fv(g_lightAmbientIndex[1], 1, &g_lightPoint.ambient[0]);
+		glUniform3fv(g_lightDiffuseIndex[1], 1, &g_lightPoint.diffuse[0]);
+		glUniform3fv(g_lightSpecularIndex[1], 1, &g_lightPoint.specular[0]);
+		//glUniform1i(g_lightTypeIndex[1], g_lightPoint.type);
 
-		glUniform3fv(g_materialAmbientIndex[0], 1, &wall_material.ambient[0]);
-		glUniform3fv(g_materialDiffuseIndex[0], 1, &wall_material.diffuse[0]);
-		glUniform3fv(g_materialSpecularIndex[0], 1, &wall_material.specular[0]);
-		glUniform1fv(g_materialShininessIndex[0], 1, &wall_material.shininess);
+		glUniform3fv(g_materialAmbientIndex[1], 1, &wall_material.ambient[0]);
+		glUniform3fv(g_materialDiffuseIndex[1], 1, &wall_material.diffuse[0]);
+		glUniform3fv(g_materialSpecularIndex[1], 1, &wall_material.specular[0]);
+		glUniform1fv(g_materialShininessIndex[1], 1, &wall_material.shininess);
 
-		glUniform1i(g_texSamplerIndex[0], 0);
-		glUniform1i(g_normalSamplerIndex[0], 1);
+		glUniform1i(g_texSamplerIndex[1], 0);
+		glUniform1i(g_normalSamplerIndex[1], 1);
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, painting_textureID[i]);
@@ -656,7 +686,7 @@ void draw_walls() {
 }
 
 void draw_floor() {
-	glUseProgram(g_shaderProgramID);
+	glUseProgram(textureLight_shaderProgramID);
 	
 	glm::mat4 MVP;
 	glm::mat4 MV;
@@ -669,23 +699,23 @@ void draw_floor() {
 	MVP = g_camera.getProjectionMatrix() * g_camera.getViewMatrix() * floorMatrix;
 	MV = g_camera.getViewMatrix() * floorMatrix;
 	V = g_camera.getViewMatrix();
-	glUniformMatrix4fv(g_MVP_Index[0], 1, GL_FALSE, &MVP[0][0]);
-	glUniformMatrix4fv(g_MV_Index[0], 1, GL_FALSE, &MV[0][0]);
-	glUniformMatrix4fv(g_V_Index[0], 1, GL_FALSE, &V[0][0]);
+	glUniformMatrix4fv(g_MVP_Index[1], 1, GL_FALSE, &MVP[0][0]);
+	glUniformMatrix4fv(g_MV_Index[1], 1, GL_FALSE, &MV[0][0]);
+	glUniformMatrix4fv(g_V_Index[1], 1, GL_FALSE, &V[0][0]);
 
-	glUniform3fv(g_lightPositionIndex[0], 1, &g_lightPoint.position[0]);
-	glUniform3fv(g_lightAmbientIndex[0], 1, &g_lightPoint.ambient[0]);
-	glUniform3fv(g_lightDiffuseIndex[0], 1, &g_lightPoint.diffuse[0]);
-	glUniform3fv(g_lightSpecularIndex[0], 1, &g_lightPoint.specular[0]);
-	glUniform1i(g_lightTypeIndex[0], g_lightPoint.type);
+	glUniform3fv(g_lightPositionIndex[1], 1, &g_lightPoint.position[0]);
+	glUniform3fv(g_lightAmbientIndex[1], 1, &g_lightPoint.ambient[0]);
+	glUniform3fv(g_lightDiffuseIndex[1], 1, &g_lightPoint.diffuse[0]);
+	glUniform3fv(g_lightSpecularIndex[1], 1, &g_lightPoint.specular[0]);
+	//glUniform1i(g_lightTypeIndex[0], g_lightPoint.type);
 
-	glUniform3fv(g_materialAmbientIndex[0], 1, &wall_material.ambient[0]);
-	glUniform3fv(g_materialDiffuseIndex[0], 1, &wall_material.diffuse[0]);
-	glUniform3fv(g_materialSpecularIndex[0], 1, &wall_material.specular[0]);
-	glUniform1fv(g_materialShininessIndex[0], 1, &wall_material.shininess);
+	glUniform3fv(g_materialAmbientIndex[1], 1, &wall_material.ambient[0]);
+	glUniform3fv(g_materialDiffuseIndex[1], 1, &wall_material.diffuse[0]);
+	glUniform3fv(g_materialSpecularIndex[1], 1, &wall_material.specular[0]);
+	glUniform1fv(g_materialShininessIndex[1], 1, &wall_material.shininess);
 
-	glUniform1i(g_texSamplerIndex[0], 0);
-	glUniform1i(g_normalSamplerIndex[0], 1);
+	glUniform1i(g_texSamplerIndex[1], 0);
+	glUniform1i(g_normalSamplerIndex[1], 1);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, floor_textureID[0]);
@@ -911,7 +941,7 @@ int main(void)
 
 
 	glDeleteProgram(g_shaderProgramID);
-	glDeleteProgram(floor_shaderProgramID);
+	glDeleteProgram(textureLight_shaderProgramID);
 	glDeleteBuffers(vbo_vao_number, g_IBO);
 	glDeleteBuffers(vbo_vao_number, g_VBO);
 	glDeleteVertexArrays(vbo_vao_number, g_VAO);
