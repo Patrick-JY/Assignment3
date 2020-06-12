@@ -509,6 +509,7 @@ GLuint painting_textureID[2];
 unsigned char* pedestal_texImage;
 GLuint pedestal_textureID[1];
 
+vec3 cubeMapHLS = vec3(1.0f, 1.0f, 1.0f);
 
 //tw vars
 float lightx;
@@ -997,7 +998,9 @@ static void init(GLFWwindow* window) {
 	partition_modelMatrix[0] *= glm::scale(vec3(1.5f, 1.5f, 1.5f));
 
 	//ornament
-	ornament_modelMatrix[0] = glm::translate(ornament_modelMatrix[0], vec3(2.0f, 0.0f, 3.0f));
+	ornament_modelMatrix[0] *= glm::scale(vec3(0.50f, 0.50f, 0.50f));
+	ornament_modelMatrix[0] *= glm::rotate(ornament_modelMatrix[0], radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	ornament_modelMatrix[0] = glm::translate(ornament_modelMatrix[0], vec3(6.0f, 9.0f, -0.5f));
 }
 
 
@@ -1014,6 +1017,8 @@ static void update_scene(GLFWwindow* window) {
 	parition_colour.r = partition_Colour_vec.x;
 	parition_colour.g = partition_Colour_vec.y;
 	parition_colour.b = partition_Colour_vec.z;
+
+	g_material.ambient = cubeMapHLS;
 	// update movement variables based on keyboard input
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 		moveForward += 1 * MOVEMENT_SENSITIVITY * frameTime;
@@ -1025,6 +1030,8 @@ static void update_scene(GLFWwindow* window) {
 		strafeRight += 1 * MOVEMENT_SENSITIVITY * frameTime;
 
 	g_camera.update(moveForward, strafeRight);	// update camera
+
+	ornament_modelMatrix[0] *= glm::rotate(radians(1.1f), vec3(0.0f, 0.0f, 1.0f));
 }
 
 static void draw_ornament() {
@@ -1456,6 +1463,9 @@ int main(void)
 	//Create Parition Frame
 	TwAddVarRW(TweakBar, "Alpha", TW_TYPE_FLOAT, &alpha, " group='Partition' min=0.0 max=1.0 step=0.01 ");
 	TwAddVarRW(TweakBar, "Colour", TW_TYPE_COLOR3F, &partition_Colour_vec, " group='Partition' ");
+
+	//Create CubeMap Frame
+	TwAddVarRW(TweakBar, "CubeMapColour", TW_TYPE_COLOR3F, &cubeMapHLS, " group='CubeMap' colormode = 'hls' ");
 	// initialise rendering states
 	init(window);
 
