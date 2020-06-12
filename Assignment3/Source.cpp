@@ -497,6 +497,7 @@ float lightx;
 float lighty;
 float lightz;
 bool wireFrame = false;
+GLfloat alpha = 0.5f;
 
 
 
@@ -579,9 +580,13 @@ bool load_mesh(const char* fileName, Mesh* mesh) {
 
 
 static void init(GLFWwindow* window) {
-	//glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_DEPTH_TEST);	// enable depth buffer test
+
+	glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+
 	lightx = 1.0f;
 	lighty = 1.0f;
 	lightz = 1.0f;
@@ -919,7 +924,8 @@ void draw_partition() {
 	// set shader variables
 	MVP = g_camera.getProjectionMatrix() * g_camera.getViewMatrix() * partition_modelMatrix[0];
 	glUniformMatrix4fv(g_MVP_Index[2], 1, GL_FALSE, &MVP[0][0]);
-	glUniform1f(g_alphaIndex[2], 1.0);
+	glUniform1f(g_alphaIndex[2], &alpha);
+	
 
 	// draw plane
 	glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -1103,7 +1109,7 @@ static void render_scene()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	// clear colour buffer and depth buffer
 
-
+	
 	draw_floor();
 
 	draw_walls();
@@ -1111,9 +1117,11 @@ static void render_scene()
 	draw_painting();
 	
 	draw_cube();
-
+	
+	
 	draw_partition();
 
+	
 	glFlush();
 }
 
@@ -1222,7 +1230,7 @@ int main(void)
 {
 	GLFWwindow* window = NULL;	// pointer to a GLFW window handle
 	TwBar* TweakBar;
-	//glEnable(GL_BLEND);
+	
 	double lastUpdateTime = glfwGetTime();	// last update time
 	double elapsedTime = lastUpdateTime;	// time elapsed since last update
 	
@@ -1304,7 +1312,9 @@ int main(void)
 	while (!glfwWindowShouldClose(window))
 	{
 		update_scene(window);		// update the scene
-
+		
+		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_BLEND);
 		if (wireFrame)
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 

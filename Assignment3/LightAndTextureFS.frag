@@ -27,9 +27,12 @@ uniform mat4 uViewMatrix;
 uniform Light uLight;
 uniform Material uMaterial;
 uniform sampler2D uTextureSampler;
+uniform float uAlpha = 1.0f;
 
-// output data
-out vec3 fColor;
+vec3 fColor;
+
+// output data, My hack to allow for minimal shader changes
+out vec4 alphafColor;
 
 void main()
 {
@@ -49,6 +52,9 @@ void main()
 	// set output color
 	fColor = ambient + diffuse + specular;
 	fColor *= texture(uTextureSampler, vTexCoord).rgb;
+
+	alphafColor = vec4(fColor,uAlpha);
+	
 
 	//fColor = texture(uTextureSampler, vTexCoord).rgb;
 }

@@ -31,9 +31,10 @@ uniform Light uLight;
 uniform Material uMaterial;
 uniform sampler2D uTextureSampler;
 uniform sampler2D uNormalSampler;
-
+uniform float uAlpha = 1.0f;
+vec3 fColor;
 // output data
-out vec3 fColor;
+out vec4 alphafColor;
 
 void main()
 {
@@ -66,4 +67,6 @@ void main()
 	// set output color
 	fColor = diffuse + specular + ambient;
 	fColor *= texture(uTextureSampler, vTexCoord).rgb;
+
+	alphafColor = vec4(fColor,uAlpha);
 }
