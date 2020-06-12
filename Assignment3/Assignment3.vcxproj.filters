@@ -39,6 +39,12 @@
     <None Include="AlphaBlendingFS.frag">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="CubeEnvMapFS.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="CubeEnvMapVS.vert">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="shader.h">

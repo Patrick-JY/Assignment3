@@ -62,7 +62,7 @@ struct simpleLight
 //mesh properties
 typedef struct Mesh
 {
-	Vertex* pMeshVertices; //points to mesh vertices
+	simplerVertex* pMeshVertices; //points to mesh vertices
 	GLint numberOfVertices; //number of vertices in the mesh
 	GLint* pMeshIndices;
 	GLint numberOfFaces;
@@ -202,15 +202,15 @@ Vertex painting_vertices[] = {
 glm::vec3 partition_Colour_vec = glm::vec3(1.0f, 0.0f, 0.0f);
 simplerVertex partition_vertices[] = {
 	// plane
-	-0.5f, 0.5f, 0.0f,	// position
+	-1.0f, 0.5f, 0.0f,	// position
 	partition_Colour_vec.x, partition_Colour_vec.y, partition_Colour_vec.z,	// colour
-	-0.5f, -0.5f, 0.0f,	// position
-	partition_Colour_vec.x, partition_Colour_vec.y, partition_Colour_vec.z,	// colour
-	0.5f, 0.5f, 0.0f,	// position
+	-1.0f, -0.5f, 0.0f,	// position
 	partition_Colour_vec.x, partition_Colour_vec.y, partition_Colour_vec.z,	// colour
 	0.5f, 0.5f, 0.0f,	// position
 	partition_Colour_vec.x, partition_Colour_vec.y, partition_Colour_vec.z,	// colour
-	-0.5f, -0.5f, 0.0f,	// position
+	0.5f, 0.5f, 0.0f,	// position
+	partition_Colour_vec.x, partition_Colour_vec.y, partition_Colour_vec.z,	// colour
+	-1.0f, -0.5f, 0.0f,	// position
 	partition_Colour_vec.x, partition_Colour_vec.y, partition_Colour_vec.z,	// colour
 	0.5f, -0.5f, 0.0f,	// position
 	partition_Colour_vec.x, partition_Colour_vec.y, partition_Colour_vec.z,	// colour
@@ -426,7 +426,7 @@ Vertex cube_vertices[] = {
 
 
 //Global Vars
-const int vbo_vao_number = 9; //needed to make sure I clean up everything properly
+const int vbo_vao_number = 10; //needed to make sure I clean up everything properly
 
 
 
@@ -436,12 +436,15 @@ GLuint g_VAO[vbo_vao_number];
 GLuint g_shaderProgramID = 0;
 GLuint textureLight_shaderProgramID = 0;
 GLuint simplePartition_ShaderProgramID = 0;
-const int shaderNumber = 3;
+GLuint CubeEnvMap_ShaderProgramID = 0;
+const int shaderNumber = 4;
 GLuint g_MVP_Index[shaderNumber];
 GLuint g_MV_Index[shaderNumber];
 GLuint g_V_Index[shaderNumber];
 GLuint g_texSamplerIndex[shaderNumber];
 GLuint g_normalSamplerIndex[shaderNumber];
+
+GLuint g_envMapSamplerIndex;
 
 GLuint g_lightPositionIndex[shaderNumber];
 GLuint g_lightAmbientIndex[shaderNumber];
@@ -466,12 +469,16 @@ glm::mat4 wall_modelMatrix[4]; //wall matrix
 glm::mat4 painting_modelMatrix[2]; //painting matrix
 glm::mat4 cube_modelMatrix[1];
 glm::mat4 partition_modelMatrix[1];
+glm::mat4 ornament_modelMatrix[1];
 
 
 Light g_lightPoint;				// light properties
 Light g_lightDirectional;		// light properties
 Material wall_material;			// wall material properties
 ColorMaterial parition_colour;
+Material g_material;			// material properties
+
+Mesh g_mesh;
 
 glm::mat4 g_viewMatrix;
 glm::mat4 g_projectionMatrix;
@@ -510,40 +517,43 @@ float lightz;
 bool wireFrame = false;
 float  alpha = 0.5f;
 
+enum CUBE_FACE { FRONT, BACK, LEFT, RIGHT, TOP, BOTTOM };
+unsigned char* cubemap_texImage[6];   //image data
+GLuint cubemap_textureID;				//texture id
 
+bool load_mesh(const char* fileName, Mesh* mesh)
+{
+	// load file with assimp 
+	const aiScene* pScene = aiImportFile(fileName, aiProcess_Triangulate
+		| aiProcess_GenSmoothNormals | aiProcess_JoinIdenticalVertices);
 
-
-//mesh load function as seen in tuts
-bool load_mesh(const char* fileName, Mesh* mesh) {
-	// load file with assimp
-	const aiScene* pScene = aiImportFile(fileName, aiProcess_Triangulate | aiProcess_GenSmoothNormals
-		| aiProcess_JoinIdenticalVertices);
-
-
-	//checks whether the scene was loaded
-	if (!pScene) {
+	// check whether scene was loaded
+	if (!pScene)
+	{
 		cout << "Could not load mesh." << endl;
 		return false;
 	}
 
-	//get pointer to mesh 0
+	// get pointer to mesh 0
 	const aiMesh* pMesh = pScene->mMeshes[0];
 
-	//store number of mesh vertices
+	// store number of mesh vertices
 	mesh->numberOfVertices = pMesh->mNumVertices;
 
 	// if mesh contains vertex coordinates
+	if (pMesh->HasPositions())
+	{
+		// allocate memory for vertices
+		mesh->pMeshVertices = new simplerVertex[pMesh->mNumVertices];
 
-	if (pMesh->HasPositions()) {
-		mesh->pMeshVertices = new Vertex[pMesh->mNumVertices];
-
-		for (int i = 0; i < pMesh->mNumVertices; i++) {
+		// read vertex coordinates and store in the array
+		for (int i = 0; i < pMesh->mNumVertices; i++)
+		{
 			const aiVector3D* pVertexPos = &(pMesh->mVertices[i]);
 
 			mesh->pMeshVertices[i].position[0] = (GLfloat)pVertexPos->x;
 			mesh->pMeshVertices[i].position[1] = (GLfloat)pVertexPos->y;
 			mesh->pMeshVertices[i].position[2] = (GLfloat)pVertexPos->z;
-
 		}
 	}
 
@@ -555,9 +565,9 @@ bool load_mesh(const char* fileName, Mesh* mesh) {
 		{
 			const aiVector3D* pVertexNormal = &(pMesh->mNormals[i]);
 
-			mesh->pMeshVertices[i].normal[0] = (GLfloat)pVertexNormal->x;
-			mesh->pMeshVertices[i].normal[1] = (GLfloat)pVertexNormal->y;
-			mesh->pMeshVertices[i].normal[2] = (GLfloat)pVertexNormal->z;
+			mesh->pMeshVertices[i].colour[0] = (GLfloat)pVertexNormal->x;
+			mesh->pMeshVertices[i].colour[1] = (GLfloat)pVertexNormal->y;
+			mesh->pMeshVertices[i].colour[2] = (GLfloat)pVertexNormal->z;
 		}
 	}
 
@@ -581,17 +591,16 @@ bool load_mesh(const char* fileName, Mesh* mesh) {
 		}
 	}
 
-	//release the scene
+	// release the scene
 	aiReleaseImport(pScene);
 
 	return true;
-
-
 }
 
 
+
 static void init(GLFWwindow* window) {
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	//glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
 	glEnable(GL_DEPTH_TEST);	// enable depth buffer test
 
@@ -605,7 +614,7 @@ static void init(GLFWwindow* window) {
 	g_shaderProgramID = loadShaders("NormalMapVS.vert", "NormalMapFS.frag");
 	textureLight_shaderProgramID = loadShaders("LightAndTextureVS.vert","LightAndTextureFS.frag" );
 	simplePartition_ShaderProgramID = loadShaders("AlphaBlendingVS.vert", "AlphaBlendingFS.frag");
-
+	CubeEnvMap_ShaderProgramID = loadShaders("CubeEnvMapVS.vert", "CubeEnvMapFS.frag");
 
 	GLuint positionIndex[shaderNumber];
 	GLuint normalIndex[shaderNumber];
@@ -672,6 +681,29 @@ static void init(GLFWwindow* window) {
 	g_colormatrIndex = glGetUniformLocation(simplePartition_ShaderProgramID, "uMaterial.r");
 	g_colormatgIndex = glGetUniformLocation(simplePartition_ShaderProgramID, "uMaterial.g");
 	g_colormatbIndex = glGetUniformLocation(simplePartition_ShaderProgramID, "uMaterial.b");
+
+
+
+	//cubeMapEnv
+	positionIndex[3] = glGetAttribLocation(CubeEnvMap_ShaderProgramID, "aPosition");
+	normalIndex[3] = glGetAttribLocation(CubeEnvMap_ShaderProgramID, "aNormal");
+	texCoordIndex[3] = glGetAttribLocation(CubeEnvMap_ShaderProgramID, "aTexCoord");
+
+	g_MVP_Index[3] = glGetUniformLocation(CubeEnvMap_ShaderProgramID, "uModelViewProjectionMatrix");
+	g_MV_Index[3] = glGetUniformLocation(CubeEnvMap_ShaderProgramID, "uModelViewMatrix");
+	g_V_Index[3] = glGetUniformLocation(CubeEnvMap_ShaderProgramID, "uViewMatrix");
+	g_envMapSamplerIndex = glGetUniformLocation(CubeEnvMap_ShaderProgramID, "uEnvironmentMap");
+
+	g_lightPositionIndex[3] = glGetUniformLocation(CubeEnvMap_ShaderProgramID, "uLight.position");
+	g_lightAmbientIndex[3] = glGetUniformLocation(CubeEnvMap_ShaderProgramID, "uLight.ambient");
+	g_lightDiffuseIndex[3] = glGetUniformLocation(CubeEnvMap_ShaderProgramID, "uLight.diffuse");
+	g_lightSpecularIndex[3] = glGetUniformLocation(CubeEnvMap_ShaderProgramID, "uLight.specular");
+
+	g_materialAmbientIndex[3] = glGetUniformLocation(CubeEnvMap_ShaderProgramID, "uMaterial.ambient");
+	g_materialDiffuseIndex[3] = glGetUniformLocation(CubeEnvMap_ShaderProgramID, "uMaterial.diffuse");
+	g_materialSpecularIndex[3] = glGetUniformLocation(CubeEnvMap_ShaderProgramID, "uMaterial.specular");
+	g_materialShininessIndex[3] = glGetUniformLocation(CubeEnvMap_ShaderProgramID, "uMaterial.shininess");
+
 	//init model matrices
 	floorMatrix = glm::mat4(1.0f);
 	wall_modelMatrix[0] = glm::mat4(1.0f);
@@ -682,6 +714,7 @@ static void init(GLFWwindow* window) {
 	painting_modelMatrix[1] = glm::mat4(1.0f);
 	cube_modelMatrix[0] = glm::mat4(1.0f);
 	partition_modelMatrix[0] = glm::mat4(1.0f);
+	ornament_modelMatrix[0] = glm::mat4(1.0f);
 	//init view matrix
 	
 
@@ -707,20 +740,51 @@ static void init(GLFWwindow* window) {
 	wall_material.specular = glm::vec3(0.2f, 0.7f, 1.0f);
 	wall_material.shininess = 40.0f;
 
+	//ornament material
+	g_material.ambient = glm::vec3(0.3f, 0.3f, 0.3f);
+	g_material.diffuse = glm::vec3(0.2f, 0.7f, 1.0f);
+	g_material.specular = glm::vec3(1.0f, 1.0f, 1.0f);
+	g_material.shininess = 40.0f;
+
 	//initialise colour
 	parition_colour.r = partition_Colour_vec.x;
 	parition_colour.g = partition_Colour_vec.y;
 	parition_colour.b = partition_Colour_vec.z;
 
 	// read the image data
-	GLint imageWidth[6];			//image width info
-	GLint imageHeight[6];			//image height info
+	GLint imageWidth[12];			//image width info
+	GLint imageHeight[12];			//image height info
 	wall_texImage[0] = readBitmapRGBImage("images/Fieldstone.bmp", &imageWidth[0], &imageHeight[0]);
 	wall_texImage[1] = readBitmapRGBImage("images/FieldstoneBumpDOT3.bmp", &imageWidth[1], &imageHeight[1]);
 	floor_texImage[0] = readBitmapRGBImage("images/check.bmp", &imageWidth[2], &imageHeight[2]);
 	painting_texImage[0] = readBitmapRGBImage("images/painting1.bmp", &imageWidth[3], &imageHeight[3]);
 	painting_texImage[1] = readBitmapRGBImage("images/tile4.bmp", &imageWidth[4], &imageHeight[4]);
 	pedestal_texImage = readBitmapRGBImage("images/smile.bmp", &imageWidth[5], &imageHeight[5]);
+	cubemap_texImage[FRONT] = readBitmapRGBImage("images/cube0.bmp", &imageWidth[6], &imageHeight[6]);
+	cubemap_texImage[BACK] = readBitmapRGBImage("images/cube1.bmp", &imageWidth[7], &imageHeight[7]);
+	cubemap_texImage[LEFT] = readBitmapRGBImage("images/cube2.bmp", &imageWidth[8], &imageHeight[8]);
+	cubemap_texImage[RIGHT] = readBitmapRGBImage("images/cube3.bmp", &imageWidth[9], &imageHeight[9]);
+	cubemap_texImage[TOP] = readBitmapRGBImage("images/cube4.bmp", &imageWidth[10], &imageHeight[10]);
+	cubemap_texImage[BOTTOM] = readBitmapRGBImage("images/cube5.bmp", &imageWidth[11], &imageHeight[11]);
+
+	glGenTextures(1, &cubemap_textureID);                  // generate texture
+
+	glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap_textureID);
+
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGB, imageWidth[9], imageHeight[9], 0, GL_BGR, GL_UNSIGNED_BYTE, cubemap_texImage[RIGHT]);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGB, imageWidth[8], imageHeight[8], 0, GL_BGR, GL_UNSIGNED_BYTE, cubemap_texImage[LEFT]);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGB, imageWidth[10], imageHeight[10], 0, GL_BGR, GL_UNSIGNED_BYTE, cubemap_texImage[TOP]);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGB, imageWidth[11], imageHeight[11], 0, GL_BGR, GL_UNSIGNED_BYTE, cubemap_texImage[BOTTOM]);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGB, imageWidth[7], imageHeight[7], 0, GL_BGR, GL_UNSIGNED_BYTE, cubemap_texImage[BACK]);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGB, imageWidth[6], imageHeight[6], 0, GL_BGR, GL_UNSIGNED_BYTE, cubemap_texImage[FRONT]);
+
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	
+	
 	// generate identifier for wall texture object and set wall texture properties
 	glGenTextures(2, wall_textureID);
 	glBindTexture(GL_TEXTURE_2D, wall_textureID[0]);
@@ -874,6 +938,31 @@ static void init(GLFWwindow* window) {
 	glEnableVertexAttribArray(colourIndex);
 
 	
+	load_mesh("models/torus.obj", &g_mesh);
+
+	// generate identifier for VBOs and copy data to GPU
+	
+	glBindBuffer(GL_ARRAY_BUFFER, g_VBO[9]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(simplerVertex) * g_mesh.numberOfVertices, g_mesh.pMeshVertices, GL_STATIC_DRAW);
+
+	// generate identifier for IBO and copy data to GPU
+	glGenBuffers(1, g_IBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_IBO[0]);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLint) * 3 * g_mesh.numberOfFaces, g_mesh.pMeshIndices, GL_STATIC_DRAW);
+
+	
+
+	// create VAO and specify VBO data
+	glBindVertexArray(g_VAO[9]);
+	glBindBuffer(GL_ARRAY_BUFFER, g_VBO[9]);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_IBO[0]);
+	glVertexAttribPointer(positionIndex[3], 3, GL_FLOAT, GL_FALSE, sizeof(simplerVertex), reinterpret_cast<void*>(offsetof(simplerVertex, position)));
+	glVertexAttribPointer(normalIndex[3], 3, GL_FLOAT, GL_FALSE, sizeof(simplerVertex), reinterpret_cast<void*>(offsetof(simplerVertex, colour)));
+
+	glEnableVertexAttribArray(positionIndex[3]);	// enable vertex attributes
+	glEnableVertexAttribArray(normalIndex[3]);
+
+
 
 
 	//Constructing House
@@ -904,7 +993,11 @@ static void init(GLFWwindow* window) {
 	cube_modelMatrix[0] = glm::translate(cube_modelMatrix[0], vec3(2.0f, -0.8f, 3.0f));
 
 	//partition
-	partition_modelMatrix[0] = glm::translate(partition_modelMatrix[0], vec3(3.0f, 0.0f, 3.0f));
+	partition_modelMatrix[0] = glm::translate(partition_modelMatrix[0], vec3(3.0f, -0.25f, 3.0f));
+	partition_modelMatrix[0] *= glm::scale(vec3(1.5f, 1.5f, 1.5f));
+
+	//ornament
+	ornament_modelMatrix[0] = glm::translate(ornament_modelMatrix[0], vec3(2.0f, 0.0f, 3.0f));
 }
 
 
@@ -932,6 +1025,37 @@ static void update_scene(GLFWwindow* window) {
 		strafeRight += 1 * MOVEMENT_SENSITIVITY * frameTime;
 
 	g_camera.update(moveForward, strafeRight);	// update camera
+}
+
+static void draw_ornament() {
+	glUseProgram(CubeEnvMap_ShaderProgramID);	// use the shaders associated with the shader program
+
+	glBindVertexArray(g_VAO[9]);		// make VAO active
+
+	// set uniform shader variables
+	glm::mat4 MVP = g_camera.getProjectionMatrix() * g_camera.getViewMatrix() * ornament_modelMatrix[0];
+	glm::mat4 MV = g_camera.getViewMatrix() * ornament_modelMatrix[0];
+	glm::mat4 V = g_camera.getViewMatrix();
+	glUniformMatrix4fv(g_MVP_Index[3], 1, GL_FALSE, &MVP[0][0]);
+	glUniformMatrix4fv(g_MV_Index[3], 1, GL_FALSE, &MV[0][0]);
+	glUniformMatrix4fv(g_V_Index[3], 1, GL_FALSE, &V[0][0]);
+
+	glUniform3fv(g_lightPositionIndex[3], 1, &g_lightPoint.position[0]);
+	glUniform3fv(g_lightAmbientIndex[3], 1, &g_lightPoint.ambient[0]);
+	glUniform3fv(g_lightDiffuseIndex[3], 1, &g_lightPoint.diffuse[0]);
+	glUniform3fv(g_lightSpecularIndex[3], 1, &g_lightPoint.specular[0]);
+
+	glUniform3fv(g_materialAmbientIndex[3], 1, &g_material.ambient[0]);
+	glUniform3fv(g_materialDiffuseIndex[3], 1, &g_material.diffuse[0]);
+	glUniform3fv(g_materialSpecularIndex[3], 1, &g_material.specular[0]);
+	glUniform1fv(g_materialShininessIndex[3], 1, &g_material.shininess);
+
+	glUniform1i(g_envMapSamplerIndex, 0);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap_textureID);
+
+	glDrawElements(GL_TRIANGLES, g_mesh.numberOfFaces * 3, GL_UNSIGNED_INT, 0);
 }
 
 void draw_partition() {
@@ -1143,6 +1267,7 @@ static void render_scene()
 	
 	draw_cube();
 	
+	draw_ornament();
 	
 	draw_partition();
 

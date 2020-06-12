@@ -153,6 +153,8 @@
     <None Include="AlphaBlendingFS.frag" />
     <None Include="AlphaBlendingVS.vert" />
     <None Include="ColorFS.frag" />
+    <None Include="CubeEnvMapFS.frag" />
+    <None Include="CubeEnvMapVS.vert" />
     <None Include="LightAndTextureFS.frag" />
     <None Include="LightAndTextureVS.vert" />
     <None Include="NormalMapFS.frag" />
