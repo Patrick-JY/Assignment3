@@ -84,7 +84,12 @@ typedef struct Material {
 	vec3 specular;
 	float shininess;
 };
-
+typedef struct ColorMaterial {
+	float r;
+	float g;
+	float b;
+	
+};
 
 Vertex wall_vertices[] = {
 	// Front: triangle 1
@@ -194,21 +199,21 @@ Vertex painting_vertices[] = {
 	1.0f, 0.0f,			// texture coordinate
 };
 
-
-Vertex partition_vertices[] = {
+glm::vec3 partition_Colour_vec = glm::vec3(1.0f, 0.0f, 0.0f);
+simplerVertex partition_vertices[] = {
 	// plane
 	-0.5f, 0.5f, 0.0f,	// position
-	1.0f, 0.0f, 0.0f,	// colour
+	partition_Colour_vec.x, partition_Colour_vec.y, partition_Colour_vec.z,	// colour
 	-0.5f, -0.5f, 0.0f,	// position
-	0.0f, 1.0f, 0.0f,	// colour
+	partition_Colour_vec.x, partition_Colour_vec.y, partition_Colour_vec.z,	// colour
 	0.5f, 0.5f, 0.0f,	// position
-	0.0f, 0.0f, 1.0f,	// colour
+	partition_Colour_vec.x, partition_Colour_vec.y, partition_Colour_vec.z,	// colour
 	0.5f, 0.5f, 0.0f,	// position
-	0.0f, 0.0f, 1.0f,	// colour
+	partition_Colour_vec.x, partition_Colour_vec.y, partition_Colour_vec.z,	// colour
 	-0.5f, -0.5f, 0.0f,	// position
-	0.0f, 1.0f, 0.0f,	// colour
+	partition_Colour_vec.x, partition_Colour_vec.y, partition_Colour_vec.z,	// colour
 	0.5f, -0.5f, 0.0f,	// position
-	1.0f, 1.0f, 0.0f,	// colour
+	partition_Colour_vec.x, partition_Colour_vec.y, partition_Colour_vec.z,	// colour
 	
 };
 
@@ -449,6 +454,11 @@ GLuint g_materialDiffuseIndex[shaderNumber];
 GLuint g_materialSpecularIndex[shaderNumber];
 GLuint g_materialShininessIndex[shaderNumber];
 
+
+GLuint g_colormatrIndex;
+GLuint g_colormatgIndex;
+GLuint g_colormatbIndex;
+
 GLuint g_alphaIndex[shaderNumber];
 
 glm::mat4 floorMatrix; //floors matrix
@@ -461,6 +471,7 @@ glm::mat4 partition_modelMatrix[1];
 Light g_lightPoint;				// light properties
 Light g_lightDirectional;		// light properties
 Material wall_material;			// wall material properties
+ColorMaterial parition_colour;
 
 glm::mat4 g_viewMatrix;
 glm::mat4 g_projectionMatrix;
@@ -497,7 +508,7 @@ float lightx;
 float lighty;
 float lightz;
 bool wireFrame = false;
-GLfloat alpha = 0.5f;
+float  alpha = 0.5f;
 
 
 
@@ -658,7 +669,9 @@ static void init(GLFWwindow* window) {
 	g_MVP_Index[2] = glGetUniformLocation(simplePartition_ShaderProgramID, "uModelViewProjectionMatrix");
 	g_alphaIndex[2] = glGetUniformLocation(simplePartition_ShaderProgramID, "uAlpha");
 
-
+	g_colormatrIndex = glGetUniformLocation(simplePartition_ShaderProgramID, "uMaterial.r");
+	g_colormatgIndex = glGetUniformLocation(simplePartition_ShaderProgramID, "uMaterial.g");
+	g_colormatbIndex = glGetUniformLocation(simplePartition_ShaderProgramID, "uMaterial.b");
 	//init model matrices
 	floorMatrix = glm::mat4(1.0f);
 	wall_modelMatrix[0] = glm::mat4(1.0f);
@@ -693,6 +706,11 @@ static void init(GLFWwindow* window) {
 	wall_material.diffuse = glm::vec3(0.2f, 0.7f, 1.0f);
 	wall_material.specular = glm::vec3(0.2f, 0.7f, 1.0f);
 	wall_material.shininess = 40.0f;
+
+	//initialise colour
+	parition_colour.r = partition_Colour_vec.x;
+	parition_colour.g = partition_Colour_vec.y;
+	parition_colour.b = partition_Colour_vec.z;
 
 	// read the image data
 	GLint imageWidth[6];			//image width info
@@ -899,7 +917,10 @@ static void update_scene(GLFWwindow* window) {
 	// variables to store forward/back and strafe movement
 	float moveForward = 0;
 	float strafeRight = 0;
-
+	
+	parition_colour.r = partition_Colour_vec.x;
+	parition_colour.g = partition_Colour_vec.y;
+	parition_colour.b = partition_Colour_vec.z;
 	// update movement variables based on keyboard input
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 		moveForward += 1 * MOVEMENT_SENSITIVITY * frameTime;
@@ -924,9 +945,13 @@ void draw_partition() {
 	// set shader variables
 	MVP = g_camera.getProjectionMatrix() * g_camera.getViewMatrix() * partition_modelMatrix[0];
 	glUniformMatrix4fv(g_MVP_Index[2], 1, GL_FALSE, &MVP[0][0]);
-	glUniform1f(g_alphaIndex[2], &alpha);
-	
+	glUniform1fv(g_alphaIndex[2],1, &alpha);
+	glUniform1fv(g_colormatrIndex, 1, &parition_colour.r);
+	glUniform1fv(g_colormatgIndex, 1, &parition_colour.g);
+	glUniform1fv(g_colormatbIndex, 1, &parition_colour.b);
 
+	
+	
 	// draw plane
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 }
@@ -1303,6 +1328,9 @@ int main(void)
 	TwAddVarRW(TweakBar, "Position y", TW_TYPE_FLOAT, &lighty, "group = Light");
 	TwAddVarRW(TweakBar, "Position z", TW_TYPE_FLOAT, &lightz, "group = Light");
 
+	//Create Parition Frame
+	TwAddVarRW(TweakBar, "Alpha", TW_TYPE_FLOAT, &alpha, " group='Partition' min=0.0 max=1.0 step=0.01 ");
+	TwAddVarRW(TweakBar, "Colour", TW_TYPE_COLOR3F, &partition_Colour_vec, " group='Partition' ");
 	// initialise rendering states
 	init(window);
 
